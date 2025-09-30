@@ -24,6 +24,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "googleExpoClientId": "19917624293-has46desj55t49bmkp90p7a7301hv5g4.apps.googleusercontent.com",
+      "googleIosClientId": "19917624293-5ljntaloh27vhp55sie6uq640c23lpd7.apps.googleusercontent.com",
+      "googleAndroidClientId": "",
+      "googleWebClientId": ""
     }
   }
 }
