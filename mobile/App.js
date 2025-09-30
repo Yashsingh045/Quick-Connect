@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import PublicLanding from './src/screens/PublicLanding';
+import PrivateLanding from './src/screens/PrivateLanding';
+import MeetingsList from './src/screens/MeetingsList';
+import MeetingRoom from './src/screens/MeetingRoom';
+import Settings from './src/screens/Settings';
 import Login from './src/screens/auth/Login';
-import { loadAuth, saveAuth } from './src/lib/authStorage';
+import { loadAuth, saveAuth, clearAuth } from './src/lib/authStorage';
 
 export default function App() {
-  const [route, setRoute] = useState('landing'); // 'landing' | 'login'
+  const [route, setRoute] = useState('landing'); // 'landing' | 'login' | 'private' | 'meetings' | 'meeting-room' | 'settings'
   const [auth, setAuth] = useState(null); // { token, user }
+  const [currentMeeting, setCurrentMeeting] = useState(null);
   const [bootstrapped, setBootstrapped] = useState(false);
 
   useEffect(() => {
@@ -13,7 +18,7 @@ export default function App() {
       const stored = await loadAuth();
       if (stored?.token) {
         setAuth(stored);
-        setRoute('landing');
+        setRoute('private');
       }
       setBootstrapped(true);
     })();
@@ -27,13 +32,67 @@ export default function App() {
         onSuccess={(data) => {
           // save for 7 days
           saveAuth(data).then(setAuth);
-          // TODO: Navigate to app home once authenticated
-          setRoute('landing');
+          // Navigate to private landing once authenticated
+          setRoute('private');
         }}
       />
     );
   }
 
+  if (route === 'meetings') {
+    return (
+      <MeetingsList
+        auth={auth}
+        onBack={() => setRoute('private')}
+        onJoinMeeting={(meeting) => {
+          setCurrentMeeting(meeting);
+          setRoute('meeting-room');
+        }}
+      />
+    );
+  }
+
+  if (route === 'meeting-room') {
+    return (
+      <MeetingRoom
+        meeting={currentMeeting}
+        auth={auth}
+        onBack={() => setRoute('meetings')}
+        onEndMeeting={() => {
+          setCurrentMeeting(null);
+          setRoute('meetings');
+        }}
+      />
+    );
+  }
+
+  if (route === 'settings') {
+    return (
+      <Settings
+        auth={auth}
+        onBack={() => setRoute('private')}
+        onNavigate={(screen) => setRoute(screen)}
+      />
+    );
+  }
+
+  // If authenticated, show private landing
+  if (auth?.token) {
+    return (
+      <PrivateLanding
+        auth={auth}
+        onLogout={async () => {
+          await clearAuth();
+          setAuth(null);
+          setRoute('landing');
+        }}
+        onViewMeetings={() => setRoute('meetings')}
+        onNavigate={(screen) => setRoute(screen)}
+      />
+    );
+  }
+
+  // Otherwise show public landing
   return (
     <PublicLanding
       onJoin={() => setRoute('login')}
