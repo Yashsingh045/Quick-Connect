@@ -1,10 +1,10 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import routes from './routes/index.js'
 
-const express = require('express');
-const cors = require('cors');
+
+
+
 
 const PORT = 3000;
 
@@ -13,7 +13,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
-app.use(routes);
+
 
  
 app.get('/', (req, res) => {
@@ -21,8 +21,8 @@ app.get('/', (req, res) => {
 });
 
 
-
-
+import routes from './routes/index.js'
+app.use(routes);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

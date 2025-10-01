@@ -1,4 +1,4 @@
-require('dotenv').config();
+import dotenv from "dotenv"
 import prisma from "../config/config.js"
 import bcrypt from "bcryptjs";
 
