@@ -8,8 +8,8 @@ import Login from './src/screens/auth/Login';
 import { loadAuth, saveAuth, clearAuth } from './src/lib/authStorage';
 
 export default function App() {
-  const [route, setRoute] = useState('landing'); // 'landing' | 'login' | 'private' | 'meetings' | 'meeting-room' | 'settings'
-  const [auth, setAuth] = useState(null); // { token, user }
+  const [route, setRoute] = useState('landing'); 
+  const [auth, setAuth] = useState(null); 
   const [currentMeeting, setCurrentMeeting] = useState(null);
   const [bootstrapped, setBootstrapped] = useState(false);
 

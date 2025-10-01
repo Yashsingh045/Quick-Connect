@@ -89,7 +89,7 @@ export default function MeetingRoom({ meeting, auth, onBack, onEndMeeting }) {
 
   const renderParticipantThumbnail = (participant, index) => {
     if (index === participants.length) {
-      // Show "+X more" tile
+
       return (
         <View key="more" style={styles.participantTile}>
           <View style={styles.moreParticipants}>
