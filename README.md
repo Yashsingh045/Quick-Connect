@@ -26,7 +26,7 @@ Quick Connect is a mobile-first video conferencing app that enables instant vide
 ### Backend (Server)
 - **Node.js** with Express.js framework
 - **Socket.IO** for real-time signaling and chat
-- **MongoDB** for data persistence
+- **MySQL** for data persistence
 - **JWT** for secure authentication
 
 ### Additional Technologies

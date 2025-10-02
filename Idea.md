@@ -61,7 +61,7 @@
 
 - Signaling Server: Socket.io.
 
-- Database: MongoDB.
+- Database: MySQL.
 
 - Cloud Storage: Firebase Storage / AWS S3.
 
