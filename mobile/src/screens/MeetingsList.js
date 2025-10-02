@@ -42,7 +42,8 @@ export default function MeetingsList({ auth, onBack, onJoinMeeting }) {
 
       const allMeetings = await response.json();
       
-      // Categorize meetings
+      // categorize meetings
+
       const now = new Date();
       const categorized = {
         ongoing: [],
@@ -86,7 +87,9 @@ export default function MeetingsList({ auth, onBack, onJoinMeeting }) {
         throw new Error('Failed to join meeting');
       }
 
-      // Find the meeting object to pass to MeetingRoom
+
+      // find the meeting object to pass to MeetingRoom
+
       const allMeetings = [...meetings.ongoing, ...meetings.upcoming, ...meetings.past];
       const meeting = allMeetings.find(m => m.meetingId === meetingId);
       
@@ -218,7 +221,10 @@ export default function MeetingsList({ auth, onBack, onJoinMeeting }) {
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Ongoing Meetings */}
+
+
+        {/* ongoing meetings */}
+
         {meetings.ongoing.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Ongoing</Text>
@@ -226,7 +232,9 @@ export default function MeetingsList({ auth, onBack, onJoinMeeting }) {
           </View>
         )}
 
-        {/* Upcoming Meetings */}
+
+        {/* upcoming meetings */}
+
         {meetings.upcoming.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Upcoming</Text>
@@ -234,7 +242,9 @@ export default function MeetingsList({ auth, onBack, onJoinMeeting }) {
           </View>
         )}
 
-        {/* Past Meetings */}
+
+        {/* past meetings */}
+
         {meetings.past.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Past</Text>
@@ -242,7 +252,9 @@ export default function MeetingsList({ auth, onBack, onJoinMeeting }) {
           </View>
         )}
 
-        {/* Empty State */}
+
+        {/* empty state */}
+        
         {meetings.ongoing.length === 0 && meetings.upcoming.length === 0 && meetings.past.length === 0 && (
           <View style={styles.emptyState}>
             <Text style={styles.emptyIcon}>📅</Text>
@@ -251,17 +263,23 @@ export default function MeetingsList({ auth, onBack, onJoinMeeting }) {
           </View>
         )}
 
-        {/* Bottom Spacing for FAB */}
+
+        {/* bottom spacing for FAB */}
+        
         <View style={styles.bottomSpacing} />
       </ScrollView>
 
-      {/* Floating Action Button */}
+
+      {/* floating action button */}
+      
       <TouchableOpacity style={styles.fab} onPress={handleScheduleMeeting}>
         <Text style={styles.fabIcon}>+</Text>
         <Text style={styles.fabText}>Schedule New Meeting</Text>
       </TouchableOpacity>
 
-      {/* Bottom Navigation */}
+
+      {/* bottom navigation */}
+
       <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.navItemActive}>
           <Text style={styles.navIconActive}>📹</Text>

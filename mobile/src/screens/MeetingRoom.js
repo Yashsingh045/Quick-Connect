@@ -45,7 +45,8 @@ export default function MeetingRoom({ meeting, auth, onBack, onEndMeeting }) {
 
   const handleMute = () => {
     setIsMuted(!isMuted);
-    // Update local participant
+
+    // update local participant
     setParticipants(prev => 
       prev.map(p => p.isYou ? { ...p, isMuted: !isMuted } : p)
     );
@@ -53,7 +54,8 @@ export default function MeetingRoom({ meeting, auth, onBack, onEndMeeting }) {
 
   const handleVideoToggle = () => {
     setIsVideoOff(!isVideoOff);
-    // Update local participant
+
+    // update local participant
     setParticipants(prev => 
       prev.map(p => p.isYou ? { ...p, isVideoOn: !isVideoOff } : p)
     );
@@ -130,7 +132,8 @@ export default function MeetingRoom({ meeting, auth, onBack, onEndMeeting }) {
     <View style={styles.container}>
       <StatusBar style="light" />
       
-      {/* Header */}
+      {/* heading */}
+      
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
           <Text style={styles.backIcon}>←</Text>
@@ -141,15 +144,21 @@ export default function MeetingRoom({ meeting, auth, onBack, onEndMeeting }) {
         </TouchableOpacity>
       </View>
 
-      {/* Main Video Display */}
+
+      {/* main video display */}
+      
       <View style={styles.mainVideoContainer}>
         <View style={styles.mainVideo}>
-          {/* Simulated video content */}
+          
+          {/* simulated video content */}
+          
           <View style={styles.videoContent}>
             <Text style={styles.speakerText}>JANGONIA</Text>
           </View>
           
-          {/* Local participant overlay */}
+          
+          {/* local participant overlay */}
+          
           <View style={styles.localParticipantOverlay}>
             <Text style={styles.localParticipantText}>
               Alex Johnson (You)
@@ -158,7 +167,9 @@ export default function MeetingRoom({ meeting, auth, onBack, onEndMeeting }) {
         </View>
       </View>
 
-      {/* Participant Thumbnails */}
+
+      {/* participant thumbnails */}
+      
       <View style={styles.participantsContainer}>
         {participants.slice(0, 3).map((participant, index) => 
           renderParticipantThumbnail(participant, index)
@@ -166,7 +177,9 @@ export default function MeetingRoom({ meeting, auth, onBack, onEndMeeting }) {
         {renderParticipantThumbnail(null, 3)}
       </View>
 
-      {/* Control Bar */}
+
+      {/* control bar */}
+      
       <View style={styles.controlBar}>
         <TouchableOpacity 
           style={[styles.controlButton, isMuted && styles.controlButtonActive]}
@@ -209,7 +222,9 @@ export default function MeetingRoom({ meeting, auth, onBack, onEndMeeting }) {
         </TouchableOpacity>
       </View>
 
-      {/* Bottom Navigation */}
+
+      {/* bottom navigation */}
+      
       <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.navItem}>
           <Text style={styles.navIcon}>📹</Text>

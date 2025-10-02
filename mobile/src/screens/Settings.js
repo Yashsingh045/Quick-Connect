@@ -101,7 +101,8 @@ export default function Settings({ auth, onBack, onNavigate }) {
     <View style={styles.container}>
       <StatusBar style="dark" />
       
-      {/* Header */}
+      {/* heading */}
+
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
           <Text style={styles.backIcon}>←</Text>
@@ -111,7 +112,9 @@ export default function Settings({ auth, onBack, onNavigate }) {
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Audio & Video Section */}
+
+        {/* audio & video section */}
+
         {renderSection('Audio & Video', (
           <>
             {renderSettingItem('🎤', 'Microphone', 'Default', handleMicrophonePress, true)}
@@ -122,7 +125,8 @@ export default function Settings({ auth, onBack, onNavigate }) {
           </>
         ))}
 
-        {/* Notifications Section */}
+        {/* notifications section */}
+
         {renderSection('Notifications', (
           <>
             {renderToggleItem('Meeting notifications', meetingNotifications, handleMeetingNotificationsToggle)}
@@ -131,7 +135,8 @@ export default function Settings({ auth, onBack, onNavigate }) {
           </>
         ))}
 
-        {/* General Section */}
+        {/* general section */}
+        
         {renderSection('General', (
           <>
             {renderSettingItem('', 'Privacy', '', handlePrivacyPress, true)}
@@ -140,7 +145,8 @@ export default function Settings({ auth, onBack, onNavigate }) {
           </>
         ))}
 
-        {/* Logout Section */}
+        {/* logout section */}
+
         {renderSection('Account', (
           <>
             <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
@@ -149,11 +155,13 @@ export default function Settings({ auth, onBack, onNavigate }) {
           </>
         ))}
 
-        {/* Bottom Spacing */}
+        {/* bottom extra space */}
+
         <View style={styles.bottomSpacing} />
       </ScrollView>
 
-      {/* Bottom Navigation */}
+      {/* bottom navigation */}
+
       <View style={styles.bottomNav}>
         <TouchableOpacity 
           style={styles.navItem} 

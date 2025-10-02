@@ -1,31 +1,37 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity ,Alert} from 'react-native';
 
 export default function PublicLanding({ onJoin, onStart }) {
   const onJoinPress = () => {
-    onJoin?.();
+    // onJoin?.();
+    Alert.alert('kaam chal raha hai\nTab Tak aap or screens ko dekh sakte hain.\nBy just uncommenting the code in return part only in App.js');
+
   };
   const onStartPress = () => {
-    onStart?.();
+    Alert.alert('kaam chal raha hai\nTab Tak aap or screens ko dekh sakte hain.\nBy just uncommenting the code in return part only in App.js');
+    // onStart?.();
   };
 
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
 
-      {/* Header Title */}
+      {/* main heading */}
+
       <View style={styles.header}>
         <Text style={styles.appTitle}>Quick Connect</Text>
       </View>
 
-      {/* Center Icon and Subtitle */}
+      {/* subtitles */}
+
       <View style={styles.hero}>
         <Text accessibilityRole="image" style={styles.icon}>🔄</Text>
         <Text style={styles.subtitle}>Connect instantly, collaborate{"\n"}seamlessly</Text>
       </View>
 
-      {/* Actions */}
+      {/* button container */}
+
       <View style={styles.actions}>
         <TouchableOpacity accessibilityRole="button" style={styles.primaryBtn} onPress={onJoinPress}>
           <Text style={styles.primaryBtnText}>Join Meeting</Text>
@@ -40,7 +46,9 @@ export default function PublicLanding({ onJoin, onStart }) {
         </TouchableOpacity>
       </View>
 
-      {/* Bottom Tab Bar (mock) */}
+
+      {/* bottom tab bar */}
+
       <View style={styles.tabBar}>
         <View style={styles.tabItemActive}>
           <Text style={styles.tabIcon}>🎥</Text>
@@ -125,7 +133,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   tabBar: {
-    position: 'absolute',
+    position: 'fixed',
     left: 0,
     right: 0,
     bottom: 0,

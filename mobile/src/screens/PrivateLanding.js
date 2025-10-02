@@ -62,23 +62,26 @@ export default function PrivateLanding({ auth, onLogout, onViewMeetings, onNavig
     <ScrollView style={styles.container}>
       <StatusBar style="dark" />
       
-      {/* Header */}
+
+      {/* heading */}
+
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Text style={styles.headerIcon}>💼</Text>
-          <Text style={styles.headerTitle}>Business Connect</Text>
+          <Text style={styles.headerTitle}>Quick Connect</Text>
         </View>
         <TouchableOpacity style={styles.notificationBtn}>
           <Text style={styles.notificationIcon}>🔔</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Welcome Message */}
+      {/* welcome message */}
       <View style={styles.welcomeSection}>
         <Text style={styles.welcomeText}>Welcome Back, {auth?.user?.name || auth?.user?.username || 'User'}!</Text>
       </View>
 
-      {/* Start a New Meeting */}
+      {/* start a new meeting */}
+      
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Start a New Meeting</Text>
         <TouchableOpacity style={styles.hostBtn} onPress={handleHostMeeting}>
@@ -101,7 +104,7 @@ export default function PrivateLanding({ auth, onLogout, onViewMeetings, onNavig
         </View>
       </View>
 
-      {/* Schedule Meeting */}
+      {/* schedule meeting */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Schedule Meeting</Text>
         <View style={styles.scheduleInfo}>
@@ -119,7 +122,7 @@ export default function PrivateLanding({ auth, onLogout, onViewMeetings, onNavig
         </View>
       </View>
 
-      {/* My Meetings */}
+      {/* my meetings */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>My Meetings</Text>
         
@@ -144,7 +147,8 @@ export default function PrivateLanding({ auth, onLogout, onViewMeetings, onNavig
         </TouchableOpacity>
       </View>
 
-      {/* Quick Actions */}
+      {/*  quick actions */}
+
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Quick Actions</Text>
         <View style={styles.quickActions}>
@@ -160,7 +164,9 @@ export default function PrivateLanding({ auth, onLogout, onViewMeetings, onNavig
         </View>
       </View>
 
-      {/* Bottom Navigation */}
+
+      {/* bottom navigation abhi styling edit krni h iski */}
+
       <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.navItemActive}>
           <Text style={styles.navIconActive}>🏠</Text>
