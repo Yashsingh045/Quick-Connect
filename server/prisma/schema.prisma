@@ -19,15 +19,14 @@ model users {
   userName String
   email    String     @unique
   password String
-  meeting  meetings[]
+  meetings meetings[]
 }
 
 model meetings {
-  meetingId   Int      @id @default(autoincrement())
-  title       String
-  createdAt   DateTime @default(now())
-  meetingFrom DateTime
-  meetingTo   DateTime
-  userId      Int
-  participant users    @relation(references: [id], fields: [userId])
+  meetingId    Int      @id @default(autoincrement())
+  title        String
+  createdAt    DateTime @default(now())
+  meetingFrom  DateTime
+  meetingTo    DateTime
+  participants users[]
 }

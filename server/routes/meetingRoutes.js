@@ -6,9 +6,10 @@ const router = Router();
 
 
 router.post("/", createMeeting)
-router.delete("/", deleteMeeting)
-router.put("/", updateMeeting)
 router.get("/", readMeeting)
+router.get("/:meetingId", readMeeting)
+router.put("/:meetingId", updateMeeting)
+router.delete("/:meetingId", deleteMeeting)
 
 
 
