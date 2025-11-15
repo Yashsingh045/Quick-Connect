@@ -8,7 +8,13 @@ import {
   TextInput,
   ScrollView,
   Alert,
+  SafeAreaView,
+  Platform,
+  Dimensions
 } from 'react-native';
+import { Ionicons, MaterialIcons, Feather, FontAwesome } from '@expo/vector-icons';
+
+const { width } = Dimensions.get('window');
 
 export default function PrivateLanding({ auth, onLogout, onViewMeetings, onNavigate }) {
   const [meetingId, setMeetingId] = useState('');
@@ -58,150 +64,267 @@ export default function PrivateLanding({ auth, onLogout, onViewMeetings, onNavig
     Alert.alert('Settings', 'Settings feature coming soon!');
   };
 
-  return (
-    <ScrollView style={styles.container}>
-      <StatusBar style="dark" />
-      
+  const [activeTab, setActiveTab] = useState('home');
 
-      {/* heading */}
-
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.headerIcon}>💼</Text>
-          <Text style={styles.headerTitle}>Quick Connect</Text>
-        </View>
-        <TouchableOpacity style={styles.notificationBtn}>
-          <Text style={styles.notificationIcon}>🔔</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* welcome message */}
-      <View style={styles.welcomeSection}>
-        <Text style={styles.welcomeText}>Welcome Back, {auth?.user?.name || auth?.user?.username || 'User'}!</Text>
-      </View>
-
-      {/* start a new meeting */}
-      
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Start a New Meeting</Text>
-        <TouchableOpacity style={styles.hostBtn} onPress={handleHostMeeting}>
-          <Text style={styles.hostBtnIcon}>📹</Text>
-          <Text style={styles.hostBtnText}>Host a Meeting</Text>
-        </TouchableOpacity>
+  const renderContent = () => {
+    return (
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        <StatusBar style="dark" />
         
-        <Text style={styles.joinLabel}>Or, enter a meeting ID to join</Text>
-        <View style={styles.joinSection}>
-          <TextInput
-            style={styles.meetingIdInput}
-            placeholder="Enter Meeting ID"
-            value={meetingId}
-            onChangeText={setMeetingId}
-            placeholderTextColor="#64748b"
-          />
-          <TouchableOpacity style={styles.joinBtn} onPress={handleJoinMeeting}>
-            <Text style={styles.joinBtnText}>Join</Text>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <View style={styles.logoContainer}>
+              <MaterialIcons name="video-call" size={24} color="#1677ff" />
+            </View>
+            <Text style={styles.headerTitle}>Quick Connect</Text>
+          </View>
+          <TouchableOpacity style={styles.notificationBtn}>
+            <Ionicons name="notifications-outline" size={24} color="#0f172a" />
           </TouchableOpacity>
         </View>
-      </View>
 
-      {/* schedule meeting */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Schedule Meeting</Text>
-        <View style={styles.scheduleInfo}>
-          <Text style={styles.scheduleIcon}>📅</Text>
-          <Text style={styles.scheduleText}>Today, 10:00 AM</Text>
+        {/* Welcome Message */}
+        <View style={styles.welcomeSection}>
+          <Text style={styles.welcomeText}>
+            Welcome Back, <Text style={styles.userName}>{auth?.user?.name || auth?.user?.username || 'User'}</Text>!
+          </Text>
         </View>
-        <TouchableOpacity style={styles.scheduleBtn} onPress={handleScheduleMeeting}>
-          <Text style={styles.scheduleBtnText}>Schedule New</Text>
-        </TouchableOpacity>
-        <View style={styles.scheduleFooter}>
-          <Text style={styles.upcomingText}>Upcoming</Text>
-          <TouchableOpacity onPress={handleViewAllMeetings}>
-            <Text style={styles.viewAllText}>View All</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
 
-      {/* my meetings */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>My Meetings</Text>
-        
-        <View style={styles.meetingItem}>
-          <Text style={styles.meetingIcon}>🕐</Text>
-          <View style={styles.meetingInfo}>
-            <Text style={styles.meetingName}>Project Sync</Text>
-            <Text style={styles.meetingTime}>Today, 2:00 PM</Text>
-          </View>
-        </View>
-        
-        <View style={styles.meetingItem}>
-          <Text style={styles.meetingIcon}>🕐</Text>
-          <View style={styles.meetingInfo}>
-            <Text style={styles.meetingName}>Client Demo</Text>
-            <Text style={styles.meetingTime}>Tomorrow, 11:00 AM</Text>
-          </View>
-        </View>
-        
-        <TouchableOpacity onPress={onViewMeetings}>
-          <Text style={styles.viewMoreText}>View More</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/*  quick actions */}
-
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Quick Actions</Text>
-        <View style={styles.quickActions}>
-          <TouchableOpacity style={styles.actionItem} onPress={handleInviteParticipants}>
-            <Text style={styles.actionIcon}>👤+</Text>
-            <Text style={styles.actionText}>Invite Participants</Text>
+        {/* Start a New Meeting Card */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Start a New Meeting</Text>
+          <TouchableOpacity 
+            style={styles.hostBtn} 
+            onPress={handleHostMeeting}
+            activeOpacity={0.9}
+          >
+            <Ionicons name="videocam" size={24} color="white" style={styles.hostBtnIcon} />
+            <Text style={styles.hostBtnText}>Host a Meeting</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity style={styles.actionItem} onPress={handleStartBroadcast}>
-            <Text style={styles.actionIcon}>📡</Text>
-            <Text style={styles.actionText}>Start Broadcast</Text>
-          </TouchableOpacity>
+          <Text style={styles.joinLabel}>Or, enter a meeting ID to join</Text>
+          <View style={styles.joinSection}>
+            <TextInput
+              style={styles.meetingIdInput}
+              placeholder="Enter Meeting ID"
+              value={meetingId}
+              onChangeText={setMeetingId}
+              placeholderTextColor="#94a3b8"
+            />
+            <TouchableOpacity 
+              style={styles.joinBtn} 
+              onPress={handleJoinMeeting}
+              activeOpacity={0.9}
+            >
+              <Text style={styles.joinBtnText}>Join</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
 
+        {/* Schedule Meeting Card */}
+        <View style={[styles.card, { marginTop: 16 }]}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>Schedule Meeting</Text>
+            <TouchableOpacity onPress={handleViewAllMeetings}>
+              <Text style={styles.viewAllText}>View All</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.scheduleContent}>
+            <View style={styles.scheduleInfo}>
+              <View style={styles.scheduleIconContainer}>
+                <Ionicons name="calendar-outline" size={20} color="#0f172a" />
+              </View>
+              <Text style={styles.scheduleText}>Today, 10:00 AM</Text>
+            </View>
+            <TouchableOpacity 
+              style={styles.scheduleBtn} 
+              onPress={handleScheduleMeeting}
+              activeOpacity={0.9}
+            >
+              <Text style={styles.scheduleBtnText}>Schedule New</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <Text style={styles.upcomingText}>Upcoming</Text>
+        </View>
 
-      {/* bottom navigation abhi styling edit krni h iski */}
+        {/* My Meetings Card */}
+        <View style={[styles.card, { marginTop: 16 }]}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>My Meetings</Text>
+            <TouchableOpacity onPress={onViewMeetings}>
+              <Text style={styles.viewMoreText}>View More</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.meetingItem}>
+            <View style={styles.meetingIconContainer}>
+              <Ionicons name="time-outline" size={18} color="#0f172a" />
+            </View>
+            <View style={styles.meetingInfo}>
+              <Text style={styles.meetingName}>Project Sync</Text>
+              <Text style={styles.meetingTime}>Today, 2:00 PM</Text>
+            </View>
+          </View>
+          
+          <View style={[styles.meetingItem, { borderBottomWidth: 0 }]}>
+            <View style={styles.meetingIconContainer}>
+              <Ionicons name="time-outline" size={18} color="#0f172a" />
+            </View>
+            <View style={styles.meetingInfo}>
+              <Text style={styles.meetingName}>Client Demo</Text>
+              <Text style={styles.meetingTime}>Tomorrow, 11:00 AM</Text>
+            </View>
+          </View>
+        </View>
 
+        {/* Quick Actions Card */}
+        <View style={[styles.card, { marginTop: 16, marginBottom: 24 }]}>
+          <Text style={styles.cardTitle}>Quick Actions</Text>
+          <View style={styles.quickActions}>
+            <TouchableOpacity 
+              style={styles.actionItem} 
+              onPress={handleInviteParticipants}
+              activeOpacity={0.9}
+            >
+              <View style={[styles.actionIconContainer, { backgroundColor: '#f0f7ff' }]}>
+                <Ionicons name="person-add" size={20} color="#1677ff" />
+              </View>
+              <Text style={styles.actionText}>Invite</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.actionItem} 
+              onPress={handleStartBroadcast}
+              activeOpacity={0.9}
+            >
+              <View style={[styles.actionIconContainer, { backgroundColor: '#f0f7ff' }]}>
+                <Ionicons name="radio" size={20} color="#1677ff" />
+              </View>
+              <Text style={styles.actionText}>Broadcast</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    );
+  };
+
+  const renderBottomTabs = () => {
+    const tabs = [
+      { id: 'home', icon: 'home-outline', label: 'Home' },
+      { id: 'calendar', icon: 'calendar-outline', label: 'Calendar' },
+      { id: 'contacts', icon: 'people-outline', label: 'Contacts' },
+      { id: 'settings', icon: 'settings-outline', label: 'Settings' },
+    ];
+
+    return (
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItemActive}>
-          <Text style={styles.navIconActive}>🏠</Text>
-          <Text style={styles.navLabelActive}>Home</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.navItem} onPress={handleCalendar}>
-          <Text style={styles.navIcon}>📅</Text>
-          <Text style={styles.navLabel}>Calendar</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.navItem} onPress={handleContacts}>
-          <Text style={styles.navIcon}>👥</Text>
-          <Text style={styles.navLabel}>Contacts</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.navItem} onPress={onNavigate}>
-          <Text style={styles.navIcon}>⚙️</Text>
-          <Text style={styles.navLabel}>Settings</Text>
-        </TouchableOpacity>
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <TouchableOpacity
+              key={tab.id}
+              style={[styles.navItem, isActive && styles.navItemActive]}
+              onPress={() => setActiveTab(tab.id)}
+              activeOpacity={0.7}
+            >
+              <Ionicons 
+                name={tab.icon} 
+                size={24} 
+                color={isActive ? '#1677ff' : '#94a3b8'} 
+              />
+              <Text style={[
+                styles.navLabel, 
+                isActive && styles.navLabelActive
+              ]}>
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
-    </ScrollView>
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      {renderContent()}
+      {renderBottomTabs()}
+    </SafeAreaView>
   );
 }
 
-const BLUE = '#1677ff';
-const BLUE_LIGHT = '#e6f0ff';
-const YELLOW = '#fadb14';
-const TEXT = '#0f172a';
-const MUTED = '#64748b';
+// Colors
+const COLORS = {
+  primary: '#1677ff',
+  primaryLight: '#e6f7ff',
+  text: '#0f172a',
+  textSecondary: '#334155',
+  muted: '#94a3b8',
+  border: '#e2e8f0',
+  background: '#f8fafc',
+  white: '#ffffff',
+  yellow: '#facc15',
+  cardBg: '#ffffff',
+  cardShadow: 'rgba(0, 0, 0, 0.05)',
+  tabInactive: '#94a3b8',
+  tabActive: '#1677ff',
+};
+
+// Spacing
+const SPACING = {
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+};
+
+// Typography
+const TYPOGRAPHY = {
+  h1: {
+    fontSize: 32,
+    fontWeight: '700',
+    lineHeight: 40,
+    color: COLORS.text,
+  },
+  h2: {
+    fontSize: 24,
+    fontWeight: '600',
+    lineHeight: 32,
+    color: COLORS.text,
+  },
+  h3: {
+    fontSize: 18,
+    fontWeight: '600',
+    lineHeight: 24,
+    color: COLORS.text,
+  },
+  body: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: COLORS.text,
+  },
+  caption: {
+    fontSize: 12,
+    lineHeight: 16,
+    color: COLORS.muted,
+  },
+};
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+    paddingBottom: Platform.OS === 'android' ? 16 : 0,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: COLORS.background,
+    padding: SPACING.md,
+    paddingBottom: 80, // Space for bottom tabs
   },
   header: {
     flexDirection: 'row',
@@ -222,65 +345,89 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: TEXT,
+    color: COLORS.text,
   },
   notificationBtn: {
     padding: 8,
   },
   notificationIcon: {
     fontSize: 20,
-    color: BLUE,
+    color: COLORS.primary,
   },
   welcomeSection: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
+    marginBottom: SPACING.lg,
   },
   welcomeText: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: TEXT,
+    ...TYPOGRAPHY.h1,
+    color: COLORS.text,
   },
+  userName: {
+    color: COLORS.primary,
+  },
+  // Cards
   card: {
-    backgroundColor: '#fff',
-    marginHorizontal: 20,
-    marginBottom: 16,
-    padding: 20,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: COLORS.cardBg,
+    borderRadius: 16,
+    padding: SPACING.md,
+    marginBottom: SPACING.md,
+    ...Platform.select({
+      ios: {
+        shadowColor: COLORS.cardShadow,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
   },
   cardTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: TEXT,
-    marginBottom: 16,
+    ...TYPOGRAPHY.h3,
+    color: COLORS.text,
+    marginBottom: 0,
   },
+  // Buttons
   hostBtn: {
-    backgroundColor: BLUE,
+    backgroundColor: COLORS.primary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 10,
-    marginBottom: 16,
+    padding: SPACING.md,
+    borderRadius: 12,
+    marginBottom: SPACING.md,
+    ...Platform.select({
+      ios: {
+        shadowColor: COLORS.primary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
   },
   hostBtnIcon: {
-    fontSize: 18,
-    marginRight: 8,
-    color: '#fff',
+    marginRight: SPACING.sm,
   },
   hostBtnText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
+    ...TYPOGRAPHY.body,
+    fontWeight: '600',
+    color: COLORS.white,
   },
+  // Input and Join Section
   joinLabel: {
-    fontSize: 14,
-    color: MUTED,
-    marginBottom: 12,
+    ...TYPOGRAPHY.caption,
+    textAlign: 'center',
+    marginBottom: SPACING.sm,
+    color: COLORS.muted,
   },
   joinSection: {
     flexDirection: 'row',
@@ -288,147 +435,210 @@ const styles = StyleSheet.create({
   },
   meetingIdInput: {
     flex: 1,
+    height: 48,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginRight: 8,
-    fontSize: 16,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    paddingHorizontal: SPACING.md,
+    marginRight: SPACING.sm,
+    ...TYPOGRAPHY.body,
+    color: COLORS.text,
+    backgroundColor: COLORS.white,
   },
   joinBtn: {
-    backgroundColor: BLUE_LIGHT,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: SPACING.lg,
+    height: 48,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: COLORS.primary,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   joinBtnText: {
-    color: BLUE,
-    fontSize: 16,
+    ...TYPOGRAPHY.body,
     fontWeight: '600',
+    color: COLORS.white,
+  },
+  // Schedule Section
+  scheduleContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
   },
   scheduleInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
   },
-  scheduleIcon: {
-    fontSize: 20,
-    marginRight: 8,
-    color: YELLOW,
+  scheduleIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(15, 23, 42, 0.05)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: SPACING.sm,
   },
   scheduleText: {
-    fontSize: 16,
-    color: TEXT,
-    fontWeight: '500',
+    ...TYPOGRAPHY.body,
+    color: COLORS.text,
   },
   scheduleBtn: {
-    backgroundColor: YELLOW,
-    paddingVertical: 14,
-    borderRadius: 10,
+    backgroundColor: COLORS.yellow,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    borderRadius: 20,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
   },
   scheduleBtnText: {
-    color: TEXT,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  scheduleFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    ...TYPOGRAPHY.caption,
+    fontWeight: '600',
+    color: COLORS.text,
   },
   upcomingText: {
-    fontSize: 14,
-    color: MUTED,
+    ...TYPOGRAPHY.caption,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginTop: SPACING.sm,
   },
   viewAllText: {
-    fontSize: 14,
-    color: BLUE,
+    ...TYPOGRAPHY.caption,
+    color: COLORS.primary,
     fontWeight: '600',
   },
+  viewMoreText: {
+    ...TYPOGRAPHY.caption,
+    color: COLORS.primary,
+    fontWeight: '500',
+    textAlign: 'right',
+    marginTop: SPACING.xs,
+  },
+  // Meeting Items
   meetingItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    paddingVertical: SPACING.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
-  meetingIcon: {
-    fontSize: 18,
-    marginRight: 12,
-    color: BLUE,
+  meetingIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(15, 23, 42, 0.05)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: SPACING.sm,
   },
   meetingInfo: {
     flex: 1,
   },
   meetingName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: TEXT,
+    ...TYPOGRAPHY.body,
+    color: COLORS.text,
+    marginBottom: 2,
   },
   meetingTime: {
-    fontSize: 14,
-    color: MUTED,
+    ...TYPOGRAPHY.caption,
+    color: COLORS.muted,
   },
-  viewMoreText: {
-    fontSize: 14,
-    color: BLUE,
-    fontWeight: '600',
-    textAlign: 'right',
-    marginTop: 8,
-  },
+  // Quick Actions
   quickActions: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
+    marginTop: SPACING.sm,
   },
   actionItem: {
     alignItems: 'center',
-    flex: 1,
+    width: '48%',
+    padding: SPACING.md,
+    borderRadius: 12,
+    backgroundColor: COLORS.white,
+    ...Platform.select({
+      ios: {
+        shadowColor: COLORS.cardShadow,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
-  actionIcon: {
-    fontSize: 24,
-    marginBottom: 8,
-    color: BLUE,
+  actionIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
   },
   actionText: {
-    fontSize: 12,
-    color: TEXT,
+    ...TYPOGRAPHY.caption,
+    color: COLORS.textSecondary,
     textAlign: 'center',
   },
+  // Bottom Navigation
   bottomNav: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#e2e8f0',
-    marginTop: 20,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingVertical: SPACING.sm,
+    backgroundColor: COLORS.white,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
   },
   navItem: {
-    flex: 1,
     alignItems: 'center',
+    padding: SPACING.xs,
+    flex: 1,
   },
   navItemActive: {
-    flex: 1,
     alignItems: 'center',
+    padding: SPACING.xs,
+    flex: 1,
   },
   navIcon: {
-    fontSize: 20,
-    marginBottom: 4,
-    color: MUTED,
-  },
-  navIconActive: {
-    fontSize: 20,
-    marginBottom: 4,
-    color: BLUE,
+    marginBottom: SPACING.xs / 2,
   },
   navLabel: {
-    fontSize: 12,
-    color: MUTED,
+    ...TYPOGRAPHY.caption,
+    color: COLORS.tabInactive,
+    fontSize: 10,
+    marginTop: 2,
   },
   navLabelActive: {
-    fontSize: 12,
-    color: BLUE,
+    ...TYPOGRAPHY.caption,
+    color: COLORS.tabActive,
     fontWeight: '600',
+    fontSize: 10,
+    marginTop: 2,
   },
 });
