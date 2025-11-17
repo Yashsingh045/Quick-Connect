@@ -1,69 +1,110 @@
-// server/utils/emailService.js
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USERNAME,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-});
+// Validate required environment variables
+const requiredEnvVars = ['EMAIL_USER', 'EMAIL_PASS'];
+const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
 
-export const sendEmail = async (to, subject, html) => {
+if (missingVars.length > 0) {
+  console.error('Missing required environment variables:', missingVars.join(', '));
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Missing required email configuration');
+  }
+}
+
+// Create a test account if in development
+const createTestAccount = async () => {
+  if (process.env.NODE_ENV === 'development') {
+    try {
+      const testAccount = await nodemailer.createTestAccount();
+      return {
+        user: testAccount.user,
+        pass: testAccount.pass,
+        host: 'smtp.ethereal.email',
+        port: 587,
+        secure: false,
+      };
+    } catch (error) {
+      console.error('Failed to create test account:', error);
+      return null;
+    }
+  }
+  return null;
+};
+
+// Create transporter
+const createTransporter = async () => {
+  // In development, use ethereal.email for testing
+  if (process.env.NODE_ENV === 'development') {
+    const testAccount = await createTestAccount();
+    if (testAccount) {
+      return nodemailer.createTransport({
+        host: testAccount.host,
+        port: testAccount.port,
+        secure: testAccount.secure,
+        auth: {
+          user: testAccount.user,
+          pass: testAccount.pass,
+        },
+      });
+    }
+  }
+
+  // In production, use Gmail SMTP
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+};
+
+export const sendEmail = async (to, subject, text, html) => {
+  if (!to) {
+    console.error('No recipient email address provided');
+    return false;
+  }
+
+  let transporter;
   try {
-    await transporter.sendMail({
-      from: `"Quick Connect" <${process.env.EMAIL_USERNAME}>`,
-      to,
-      subject,
-      html,
-    });
+    transporter = await createTransporter();
+    if (!transporter) {
+      throw new Error('Failed to create email transporter');
+    }
+
+    const mailOptions = {
+      from: `"Quick-Connect" <${process.env.EMAIL_USER || 'noreply@quickconnect.com'}>`,
+      to: Array.isArray(to) ? to.join(', ') : to,
+      subject: subject || 'No Subject',
+      text: text || '',
+      html: html || text?.replace(/\n/g, '<br>') || '',
+    };
+
+    console.log(`Sending email to: ${to}, Subject: ${subject}`);
+    
+    const info = await transporter.sendMail(mailOptions);
+    
+    // In development, log the test email URL
+    if (process.env.NODE_ENV === 'development' && info) {
+      console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+    }
+
+    console.log('Email sent successfully to:', to);
     return true;
   } catch (error) {
     console.error('Error sending email:', error);
+    
+    // Log detailed error information
+    if (error.response) {
+      console.error('SMTP Error Response:', {
+        code: error.responseCode,
+        message: error.response,
+      });
+    }
+    
     return false;
   }
-};
-
-export const sendVerificationEmail = async (user, token) => {
-  const verificationUrl = `${process.env.CLIENT_URL}/verify-email?token=${token}`;
-  const subject = 'Verify Your Email Address';
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2>Welcome to Quick Connect!</h2>
-      <p>Please verify your email address by clicking the button below:</p>
-      <a href="${verificationUrl}" 
-         style="display: inline-block; padding: 10px 20px; background: #1677ff; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0;">
-        Verify Email
-      </a>
-      <p>Or copy and paste this link into your browser:</p>
-      <p>${verificationUrl}</p>
-      <p>This link will expire in 24 hours.</p>
-    </div>
-  `;
-
-  return sendEmail(user.email, subject, html);
-};
-
-export const sendPasswordResetEmail = async (user, token) => {
-  const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${token}`;
-  const subject = 'Password Reset Request';
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2>Reset Your Password</h2>
-      <p>You requested to reset your password. Click the button below to set a new password:</p>
-      <a href="${resetUrl}" 
-         style="display: inline-block; padding: 10px 20px; background: #1677ff; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0;">
-        Reset Password
-      </a>
-      <p>Or copy and paste this link into your browser:</p>
-      <p>${resetUrl}</p>
-      <p>This link will expire in 1 hour.</p>
-      <p>If you didn't request this, please ignore this email.</p>
-    </div>
-  `;
-
-  return sendEmail(user.email, subject, html);
 };

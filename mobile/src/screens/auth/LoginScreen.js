@@ -12,8 +12,16 @@ const LoginScreen = ({ navigation }) => {
   const { login } = useAuth();
 
   const handleLogin = async () => {
+    // Basic validation
     if (!email || !password) {
       setError('Please enter both email and password');
+      return;
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address');
       return;
     }
 
@@ -21,12 +29,17 @@ const LoginScreen = ({ navigation }) => {
     setError('');
 
     try {
-      const result = await login(email, password);
+      const result = await login(email.trim().toLowerCase(), password);
+      
       if (!result.success) {
-        setError(result.error || 'Login failed');
+        setError(result.error || 'Login failed. Please check your credentials.');
+      } else {
+        // Login successful - navigation is handled by the AuthContext or RootNavigator
+        console.log('Login successful');
       }
     } catch (error) {
-      setError('An error occurred. Please try again.');
+      console.error('Login error:', error);
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -55,11 +68,16 @@ const LoginScreen = ({ navigation }) => {
         secureTextEntry
       />
       
-      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={isLoading}>
+      <TouchableOpacity 
+        style={[styles.button, isLoading && styles.buttonDisabled]}
+        onPress={handleLogin} 
+        disabled={isLoading}
+        activeOpacity={0.8}
+      >
         {isLoading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.buttonText}>Login</Text>
+          <Text style={styles.buttonText}>Sign In</Text>
         )}
       </TouchableOpacity>
       
@@ -100,11 +118,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   button: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#1677ff',
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 10,
+  },
+  buttonDisabled: {
+    backgroundColor: '#a0c4ff',
+    opacity: 0.7,
   },
   buttonText: {
     color: '#fff',

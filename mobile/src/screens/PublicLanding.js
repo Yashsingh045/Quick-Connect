@@ -1,14 +1,23 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Alert, SafeAreaView, Platform } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, Platform } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import PropTypes from 'prop-types';
 
-export default function PublicLanding({ onJoin, onStart }) {
+export default function PublicLanding({ onJoin }) {
+  const navigation = useNavigation();
+  
   const onJoinPress = () => {
-    Alert.alert('kaam chal raha hai\nTab Tak aap or screens ko dekh sakte hain.\nBy just uncommenting the code in return part only in App.js');
+    if (onJoin) {
+      onJoin();
+    } else {
+      // Default behavior if onJoin is not provided
+      navigation.navigate('Login');
+    }
   };
   
-  const onStartPress = () => {
-    Alert.alert('kaam chal raha hai\nTab Tak aap or screens ko dekh sakte hain.\nBy just uncommenting the code in return part only in App.js');
+  const onSignInPress = () => {
+    navigation.navigate('Login');
   };
 
   return (
@@ -47,10 +56,10 @@ export default function PublicLanding({ onJoin, onStart }) {
         <View style={styles.buttonContainer}>
           <TouchableOpacity 
             style={styles.primaryBtn} 
-            onPress={onStartPress}
+            onPress={onSignInPress}
             activeOpacity={0.9}
           >
-            <Text style={styles.primaryBtnText}>Start New Meeting</Text>
+            <Text style={styles.primaryBtnText}>Sign In</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -71,6 +80,10 @@ const WHITE = '#fff';
 const DARK = '#0a0a0a';
 const MUTED = '#9ca3af';
 const SPACING = 16;
+
+PublicLanding.propTypes = {
+  onJoin: PropTypes.func,
+};
 
 const styles = StyleSheet.create({
   safeArea: {
