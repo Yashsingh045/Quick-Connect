@@ -43,6 +43,55 @@ export const AuthProvider = ({ children }) => {
       setIsLoading(false);
     }
   };
+const login = async (email, password) => {
+  setIsLoading(true);
+  setError(null);
+  try {
+    console.log('Login attempt with:', { email, passwordLength: password.length });
+    
+    const response = await api.post('/auth/login', {
+      email: email.trim().toLowerCase(),
+      password: password
+    });
+
+    console.log('Login response:', response.data);
+
+    if (response.data.success) {
+      const { user, tokens } = response.data.data;
+      if (tokens) {
+        await AsyncStorage.setItem('accessToken', tokens.accessToken);
+        if (tokens.refreshToken) {
+          await AsyncStorage.setItem('refreshToken', tokens.refreshToken);
+        }
+        setUser(user);
+      }
+      return { success: true, data: response.data.data };
+    }
+    throw new Error(response.data.message || 'Login failed');
+  } catch (error) {
+    console.error('Login error details:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status
+    });
+    const message = error.response?.data?.message || error.message || 'Login failed. Please check your credentials.';
+    setError(message);
+    return { success: false, error: message };
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
+  const logout = async () => {
+    try {
+      await AsyncStorage.removeItem('accessToken');
+      await AsyncStorage.removeItem('refreshToken');
+      setUser(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   return (
     <AuthContext.Provider
@@ -51,6 +100,8 @@ export const AuthProvider = ({ children }) => {
         isLoading,
         error,
         register,
+        login,
+        logout,
       }}
     >
       {children}

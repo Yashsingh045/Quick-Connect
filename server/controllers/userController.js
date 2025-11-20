@@ -121,7 +121,8 @@ export const createUser = async (req, res) => {
         data: {
           email,
           password: hashedPassword,
-          userName: name
+          userName: name,
+          emailVerified: true,
         }
       });
     } catch (dbError) {
@@ -172,6 +173,8 @@ export const createUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log('Login attempt for:', email);
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
 
     if (!email || !password) {
       return res.status(400).json({
@@ -180,10 +183,9 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    // Convert email to lowercase for case-insensitive comparison
     const emailLower = email.toLowerCase().trim();
+    console.log('Searching for user with email:', emailLower);
 
-    // Find user with case-insensitive email
     const user = await prisma.users.findFirst({
       where: {
         email: {
@@ -193,6 +195,13 @@ export const loginUser = async (req, res) => {
       }
     });
 
+    console.log('User found:', user ? 'Yes' : 'No');
+    if (user) {
+      console.log('User ID:', user.id);
+      const validPassword = await bcrypt.compare(password, user.password);
+      console.log('Password valid:', validPassword);
+    }
+
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -200,12 +209,6 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    if (!user.emailVerified) {
-      return res.status(403).json({
-        success: false,
-        message: 'Please verify your email before logging in'
-      });
-    }
 
     const validPassword = await bcrypt.compare(password, user.password);
     
