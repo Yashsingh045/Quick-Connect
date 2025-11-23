@@ -37,7 +37,7 @@ export const createUser = async (req, res) => {
       });
     }
 
-    // Hash password
+    // password hashing
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create new user
