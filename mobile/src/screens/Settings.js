@@ -9,6 +9,7 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
+import { Ionicons, MaterialIcons, MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 
 export default function Settings({ auth, onBack, onNavigate }) {
   const [meetingNotifications, setMeetingNotifications] = useState(false);
@@ -61,24 +62,33 @@ export default function Settings({ auth, onBack, onNavigate }) {
     );
   };
 
-  const renderSettingItem = (icon, title, subtitle, onPress, showArrow = false) => (
-    <TouchableOpacity style={styles.settingItem} onPress={onPress}>
-      <View style={styles.settingLeft}>
-        <View style={styles.settingIconContainer}>
-          <Text style={styles.settingIcon}>{icon}</Text>
+  const renderSettingItem = (icon, title, subtitle, onPress, showArrow = false) => {
+    const iconSize = 22;
+    const iconColor = '#64748b';
+    
+    return (
+      <TouchableOpacity style={styles.settingItem} onPress={onPress}>
+        <View style={styles.settingLeft}>
+          <View style={styles.settingIconContainer}>
+            {icon}
+          </View>
+          <View style={styles.settingTextContainer}>
+            <Text style={styles.settingTitle}>{title}</Text>
+            {subtitle && <Text style={styles.settingSubtitle}>{subtitle}</Text>}
+          </View>
         </View>
-        <View style={styles.settingTextContainer}>
-          <Text style={styles.settingTitle}>{title}</Text>
-          {subtitle && <Text style={styles.settingSubtitle}>{subtitle}</Text>}
-        </View>
-      </View>
-      {showArrow && <Text style={styles.arrow}>›</Text>}
-    </TouchableOpacity>
-  );
+        {showArrow && <Ionicons name="chevron-forward" size={20} color="#cbd5e1" />}
+      </TouchableOpacity>
+    );
+  };
 
   const renderToggleItem = (title, value, onToggle) => (
     <View style={styles.settingItem}>
-      <Text style={styles.settingTitle}>{title}</Text>
+      {typeof title === 'string' ? (
+        <Text style={styles.settingTitle}>{title}</Text>
+      ) : (
+        title
+      )}
       <Switch
         value={value}
         onValueChange={onToggle}
@@ -105,7 +115,7 @@ export default function Settings({ auth, onBack, onNavigate }) {
 
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backIcon}>←</Text>
+          <Ionicons name="arrow-back" size={24} color="#0f172a" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Settings</Text>
         <View style={styles.headerRight} />
@@ -114,34 +124,75 @@ export default function Settings({ auth, onBack, onNavigate }) {
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
 
         {/* audio & video section */}
-
         {renderSection('Audio & Video', (
           <>
-            {renderSettingItem('🎤', 'Microphone', 'Default', handleMicrophonePress, true)}
+            {renderSettingItem(
+              <MaterialIcons name="mic" size={22} color="#64748b" />,
+              'Microphone',
+              'Default',
+              handleMicrophonePress,
+              true
+            )}
             <View style={styles.separator} />
-            {renderSettingItem('🔊', 'Speaker', 'Default', handleSpeakerPress, true)}
+            {renderSettingItem(
+              <Ionicons name="volume-high" size={22} color="#64748b" />,
+              'Speaker',
+              'Default',
+              handleSpeakerPress,
+              true
+            )}
             <View style={styles.separator} />
-            {renderSettingItem('📹', 'Camera', 'Default', handleCameraPress, true)}
+            {renderSettingItem(
+              <MaterialIcons name="videocam" size={22} color="#64748b" />,
+              'Camera',
+              'Default',
+              handleCameraPress,
+              true
+            )}
           </>
         ))}
 
         {/* notifications section */}
-
         {renderSection('Notifications', (
           <>
-            {renderToggleItem('Meeting notifications', meetingNotifications, handleMeetingNotificationsToggle)}
+            {renderToggleItem(
+              <View style={styles.toggleItem}>
+                <Ionicons name="notifications-outline" size={20} color="#64748b" style={styles.toggleIcon} />
+                <Text style={styles.toggleText}>Meeting notifications</Text>
+              </View>,
+              meetingNotifications,
+              handleMeetingNotificationsToggle
+            )}
             <View style={styles.separator} />
-            {renderToggleItem('Chat notifications', chatNotifications, handleChatNotificationsToggle)}
+            {renderToggleItem(
+              <View style={styles.toggleItem}>
+                <Ionicons name="chatbubble-ellipses-outline" size={20} color="#64748b" style={styles.toggleIcon} />
+                <Text style={styles.toggleText}>Chat notifications</Text>
+              </View>,
+              chatNotifications,
+              handleChatNotificationsToggle
+            )}
           </>
         ))}
 
         {/* general section */}
-        
         {renderSection('General', (
           <>
-            {renderSettingItem('', 'Privacy', '', handlePrivacyPress, true)}
+            {renderSettingItem(
+              <MaterialIcons name="privacy-tip" size={22} color="#64748b" />,
+              'Privacy',
+              '',
+              handlePrivacyPress,
+              true
+            )}
             <View style={styles.separator} />
-            {renderSettingItem('', 'Terms of Service', '', handleTermsPress, true)}
+            {renderSettingItem(
+              <MaterialIcons name="description" size={22} color="#64748b" />,
+              'Terms of Service',
+              '',
+              handleTermsPress,
+              true
+            )}
           </>
         ))}
 
@@ -167,7 +218,7 @@ export default function Settings({ auth, onBack, onNavigate }) {
           style={styles.navItem} 
           onPress={() => onNavigate && onNavigate('meetings')}
         >
-          <Text style={styles.navIcon}>▶️</Text>
+          <Ionicons name="videocam-outline" size={24} color="#64748b" />
           <Text style={styles.navLabel}>Meetings</Text>
         </TouchableOpacity>
         
@@ -175,12 +226,12 @@ export default function Settings({ auth, onBack, onNavigate }) {
           style={styles.navItem}
           onPress={() => onNavigate && onNavigate('contacts')}
         >
-          <Text style={styles.navIcon}>👥</Text>
+          <Ionicons name="people-outline" size={24} color="#64748b" />
           <Text style={styles.navLabel}>Contacts</Text>
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.navItemActive}>
-          <Text style={styles.navIconActive}>⚙️</Text>
+          <Ionicons name="settings" size={24} color="#1677ff" />
           <Text style={styles.navLabelActive}>Settings</Text>
           <View style={styles.activeIndicator} />
         </TouchableOpacity>
@@ -215,7 +266,7 @@ const styles = StyleSheet.create({
   },
   backIcon: {
     fontSize: 24,
-    color: TEXT,
+    color: '#0f172a',
   },
   headerTitle: {
     fontSize: 24,
@@ -260,10 +311,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   settingIconContainer: {
-    width: 40,
-    height: 40,
-    backgroundColor: LIGHT_GREY,
-    borderRadius: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: '#f1f5f9',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -318,34 +369,28 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   navItem: {
-    flex: 1,
     alignItems: 'center',
-    paddingTop: 4,
-  },
-  navItemActive: {
+    padding: 8,
     flex: 1,
-    alignItems: 'center',
-    paddingTop: 4,
-    position: 'relative',
   },
   navIcon: {
-    fontSize: 20,
     marginBottom: 4,
-    color: MUTED,
-  },
-  navIconActive: {
-    fontSize: 20,
-    marginBottom: 4,
-    color: BLUE,
   },
   navLabel: {
     fontSize: 12,
     color: MUTED,
+    marginTop: 2,
+  },
+  navItemActive: {
+    alignItems: 'center',
+    padding: 8,
+    flex: 1,
   },
   navLabelActive: {
     fontSize: 12,
     color: BLUE,
     fontWeight: '600',
+    marginTop: 2,
   },
   activeIndicator: {
     position: 'absolute',

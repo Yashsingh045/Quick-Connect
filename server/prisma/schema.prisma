@@ -15,11 +15,19 @@ datasource db {
 }
 
 model users {
-  id       Int        @id @default(autoincrement())
-  userName String
-  email    String     @unique
-  password String
-  meetings meetings[]
+  id                Int        @id @default(autoincrement())
+  userName          String
+  email             String     @unique
+  password          String
+  refreshToken      String?
+  emailVerified     Boolean    @default(false)
+  emailVerifyToken  String?
+  emailVerifyExpiry DateTime?
+  resetToken        String?
+  resetTokenExpiry  DateTime?
+  meetings          meetings[]
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
 }
 
 model meetings {
