@@ -40,6 +40,7 @@ export const generateZegoToken = (appID, appSign, userID, effectiveTimeInSeconds
       .update(payloadStr)
       .digest('hex');
 
+      
     // Encode payload and signature to base64
     const token = Buffer.from(
       JSON.stringify({

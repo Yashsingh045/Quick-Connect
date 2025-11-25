@@ -7,7 +7,7 @@ const getBaseUrl = () => {
   if (__DEV__) {
     // For Android emulator, use 10.0.2.2 to access localhost
     if (Platform.OS === 'android') {
-      return 'http://10.0.2.2:3000/api';
+      return 'http://10.254.201.245:3000/api';
     }
     // For iOS simulator, use localhost
     return 'http://localhost:3000/api';

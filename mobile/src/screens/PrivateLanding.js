@@ -1,649 +1,283 @@
 import React, { useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
 import {
   StyleSheet,
-  Text,
   View,
+  Text,
   TouchableOpacity,
-  TextInput,
-  ScrollView,
-  Alert,
   SafeAreaView,
-  Platform,
-  Dimensions
+  ScrollView,
+  StatusBar,
+  Image,
+  TextInput,
+  Alert,
 } from 'react-native';
-import { Ionicons, MaterialIcons, Feather, FontAwesome } from '@expo/vector-icons';
-
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../contexts/AuthContext';
+// Import the new components
+import MeetingScheduleCard from '../components/MeetingScheduleCard';
+import ScheduledMeetingsModal from '../components/ScheduledMeetingsModal';
 
-const { width } = Dimensions.get('window');
-
-export default function PrivateLanding({ auth, onLogout, onViewMeetings }) {
+const PrivateLanding = () => {
   const navigation = useNavigation();
-  const [meetingId, setMeetingId] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+  const [meetingCode, setMeetingCode] = useState('');
+  
+  // State for the modal
+  const [isScheduleModalVisible, setScheduleModalVisible] = useState(false);
 
-  const handleHostMeeting = () => {
-    // Generate a random meeting ID for hosting
-    const newMeetingId = Math.floor(Math.random() * 100000000).toString();
-    navigation.navigate('MeetingRoom', { roomName: newMeetingId });
-  };
+  // Dummy data for meetings (replace with API data later)
+  const scheduledMeetings = [
+    { id: '1', title: 'Team Standup', time: 'Today, 10:00 AM' },
+    { id: '2', title: 'Project Review', time: 'Tomorrow, 2:00 PM' },
+    { id: '3', title: 'Client Call', time: 'Fri, 11:30 AM' },
+  ];
 
   const handleJoinMeeting = () => {
-    if (!meetingId.trim()) {
-      Alert.alert('Error', 'Please enter a meeting ID');
+    if (!meetingCode.trim()) {
+      Alert.alert('Error', 'Please enter a meeting code');
       return;
     }
-    navigation.navigate('MeetingRoom', { roomName: meetingId });
+    navigation.navigate('MeetingRoom', { roomName: meetingCode.trim() });
   };
 
-  const handleScheduleMeeting = () => {
-    Alert.alert('Schedule Meeting', 'Meeting scheduling feature coming soon!');
+  const handleNewMeeting = () => {
+    const randomRoomId = Math.floor(10000000 + Math.random() * 90000000).toString();
+    navigation.navigate('MeetingRoom', { roomName: randomRoomId });
   };
 
-  const handleInviteParticipants = () => {
-    Alert.alert('Invite Participants', 'Invite feature coming soon!');
-  };
-
-  const handleStartBroadcast = () => {
-    Alert.alert('Start Broadcast', 'Broadcast feature coming soon!');
-  };
-
-  const handleViewAllMeetings = () => {
-    Alert.alert('View All Meetings', 'Meeting list feature coming soon!');
-  };
-
-  const handleViewMoreMeetings = () => {
-    Alert.alert('View More Meetings', 'Meeting details feature coming soon!');
-  };
-
-  const handleCalendar = () => {
-    Alert.alert('Calendar', 'Calendar feature coming soon!');
-  };
-
-  const handleContacts = () => {
-    Alert.alert('Contacts', 'Contacts feature coming soon!');
-  };
-
-  const handleSettings = () => {
-    Alert.alert('Settings', 'Settings feature coming soon!');
-  };
-
-  const [activeTab, setActiveTab] = useState('home');
-
-  const renderContent = () => {
-    return (
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        <StatusBar style="dark" />
-
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <View style={styles.logoContainer}>
-              <MaterialIcons name="video-call" size={24} color="#1677ff" />
-            </View>
-            <Text style={styles.headerTitle}>Quick Connect</Text>
-          </View>
-          <TouchableOpacity style={styles.notificationBtn}>
-            <Ionicons name="notifications-outline" size={24} color="#0f172a" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Welcome Message */}
-        <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeText}>
-            Welcome Back, <Text style={styles.userName}>{auth?.user?.name || auth?.user?.username || 'User'}</Text>!
-          </Text>
-        </View>
-
-        {/* Start a New Meeting Card */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Start a New Meeting</Text>
-          <TouchableOpacity
-            style={styles.hostBtn}
-            onPress={handleHostMeeting}
-            activeOpacity={0.9}
-          >
-            <Ionicons name="videocam" size={24} color="white" style={styles.hostBtnIcon} />
-            <Text style={styles.hostBtnText}>Host a Meeting</Text>
-          </TouchableOpacity>
-
-          <Text style={styles.joinLabel}>Or, enter a meeting ID to join</Text>
-          <View style={styles.joinSection}>
-            <TextInput
-              style={styles.meetingIdInput}
-              placeholder="Enter Meeting ID"
-              value={meetingId}
-              onChangeText={setMeetingId}
-              placeholderTextColor="#94a3b8"
-            />
-            <TouchableOpacity
-              style={styles.joinBtn}
-              onPress={handleJoinMeeting}
-              activeOpacity={0.9}
-            >
-              <Text style={styles.joinBtnText}>Join</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Schedule Meeting Card */}
-        <View style={[styles.card, { marginTop: 16 }]}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>Schedule Meeting</Text>
-            <TouchableOpacity onPress={handleViewAllMeetings}>
-              <Text style={styles.viewAllText}>View All</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.scheduleContent}>
-            <View style={styles.scheduleInfo}>
-              <View style={styles.scheduleIconContainer}>
-                <Ionicons name="calendar-outline" size={20} color="#0f172a" />
-              </View>
-              <Text style={styles.scheduleText}>Today, 10:00 AM</Text>
-            </View>
-            <TouchableOpacity
-              style={styles.scheduleBtn}
-              onPress={handleScheduleMeeting}
-              activeOpacity={0.9}
-            >
-              <Text style={styles.scheduleBtnText}>Schedule New</Text>
-            </TouchableOpacity>
-          </View>
-
-          <Text style={styles.upcomingText}>Upcoming</Text>
-        </View>
-
-        {/* My Meetings Card */}
-        <View style={[styles.card, { marginTop: 16 }]}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>My Meetings</Text>
-            <TouchableOpacity onPress={onViewMeetings}>
-              <Text style={styles.viewMoreText}>View More</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.meetingItem}>
-            <View style={styles.meetingIconContainer}>
-              <Ionicons name="time-outline" size={18} color="#0f172a" />
-            </View>
-            <View style={styles.meetingInfo}>
-              <Text style={styles.meetingName}>Project Sync</Text>
-              <Text style={styles.meetingTime}>Today, 2:00 PM</Text>
-            </View>
-          </View>
-
-          <View style={[styles.meetingItem, { borderBottomWidth: 0 }]}>
-            <View style={styles.meetingIconContainer}>
-              <Ionicons name="time-outline" size={18} color="#0f172a" />
-            </View>
-            <View style={styles.meetingInfo}>
-              <Text style={styles.meetingName}>Client Demo</Text>
-              <Text style={styles.meetingTime}>Tomorrow, 11:00 AM</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Quick Actions Card */}
-        <View style={[styles.card, { marginTop: 16, marginBottom: 24 }]}>
-          <Text style={styles.cardTitle}>Quick Actions</Text>
-          <View style={styles.quickActions}>
-            <TouchableOpacity
-              style={styles.actionItem}
-              onPress={handleInviteParticipants}
-              activeOpacity={0.9}
-            >
-              <View style={[styles.actionIconContainer, { backgroundColor: '#f0f7ff' }]}>
-                <Ionicons name="person-add" size={20} color="#1677ff" />
-              </View>
-              <Text style={styles.actionText}>Invite</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.actionItem}
-              onPress={handleStartBroadcast}
-              activeOpacity={0.9}
-            >
-              <View style={[styles.actionIconContainer, { backgroundColor: '#f0f7ff' }]}>
-                <Ionicons name="radio" size={20} color="#1677ff" />
-              </View>
-              <Text style={styles.actionText}>Broadcast</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </ScrollView>
-    );
-  };
-
-  const renderBottomTabs = () => {
-    const tabs = [
-      { id: 'home', icon: 'home-outline', label: 'Home' },
-      { id: 'calendar', icon: 'calendar-outline', label: 'Calendar' },
-      { id: 'contacts', icon: 'people-outline', label: 'Contacts' },
-      { id: 'settings', icon: 'settings-outline', label: 'Settings' },
-    ];
-
-    return (
-      <View style={styles.bottomNav}>
-        {tabs.map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <TouchableOpacity
-              key={tab.id}
-              style={[styles.navItem, isActive && styles.navItemActive]}
-              onPress={() => setActiveTab(tab.id)}
-              activeOpacity={0.7}
-            >
-              <Ionicons
-                name={tab.icon}
-                size={24}
-                color={isActive ? '#1677ff' : '#94a3b8'}
-              />
-              <Text style={[
-                styles.navLabel,
-                isActive && styles.navLabelActive
-              ]}>
-                {tab.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-    );
+  const handleScheduleNew = () => {
+    Alert.alert('Coming Soon', 'Schedule meeting feature will be available soon!');
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      {renderContent()}
-      {renderBottomTabs()}
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#f8fafc" />
+      
+      {/* Header Section */}
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.greeting}>Hello,</Text>
+          <Text style={styles.userName}>{user?.name || user?.username || 'User'}</Text>
+        </View>
+        <TouchableOpacity style={styles.profileBtn}>
+          <Image
+            source={{ uri: 'https://ui-avatars.com/api/?name=' + (user?.name || 'User') + '&background=0D8ABC&color=fff' }}
+            style={styles.profileImage}
+          />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        
+        {/* Join Meeting Card */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Join a Meeting</Text>
+          <Text style={styles.cardSubtitle}>Enter the code shared by the host</Text>
+          
+          <View style={styles.inputContainer}>
+            <Ionicons name="keypad-outline" size={20} color="#64748b" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Enter meeting code"
+              placeholderTextColor="#94a3b8"
+              value={meetingCode}
+              onChangeText={setMeetingCode}
+              keyboardType="numeric"
+            />
+          </View>
+
+          <TouchableOpacity
+            style={styles.joinBtn}
+            onPress={handleJoinMeeting}
+            activeOpacity={0.9}
+          >
+            <Text style={styles.joinBtnText}>Join Meeting</Text>
+            <Ionicons name="arrow-forward" size={20} color="#fff" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Host Meeting Card */}
+        <View style={[styles.card, { marginTop: 16 }]}>
+          <Text style={styles.cardTitle}>Host a Meeting</Text>
+          <Text style={styles.cardSubtitle}>Start an instant meeting and invite others</Text>
+          
+          <View style={styles.actionButtons}>
+            <TouchableOpacity
+              style={[styles.actionBtn, styles.primaryActionBtn]}
+              onPress={handleNewMeeting}
+              activeOpacity={0.9}
+            >
+              <View style={styles.iconCircle}>
+                <Ionicons name="videocam" size={24} color="#fff" />
+              </View>
+              <Text style={styles.actionBtnText}>Instant Meeting</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.actionBtn} activeOpacity={0.9}>
+              <View style={[styles.iconCircle, styles.secondaryIconCircle]}>
+                <Ionicons name="share-social" size={24} color="#0f172a" />
+              </View>
+              <Text style={[styles.actionBtnText, { color: '#0f172a' }]}>Share Invite</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* NEW: Reusable Schedule Component */}
+        <MeetingScheduleCard 
+          nextMeeting={scheduledMeetings[0]} 
+          onViewAll={() => setScheduleModalVisible(true)}
+          onScheduleNew={handleScheduleNew}
+        />
+
+        {/* My Meetings Card (Placeholder for history or other features) */}
+        <View style={[styles.card, { marginTop: 16 }]}>
+           <Text style={styles.cardTitle}>Recent History</Text>
+           <Text style={styles.cardSubtitle}>No recent meetings</Text>
+        </View>
+
+      </ScrollView>
+
+      {/* Modal for Viewing All Scheduled Meetings */}
+      <ScheduledMeetingsModal 
+        visible={isScheduleModalVisible}
+        onClose={() => setScheduleModalVisible(false)}
+        meetings={scheduledMeetings}
+      />
+
     </SafeAreaView>
   );
-}
-
-// Colors
-const COLORS = {
-  primary: '#1677ff',
-  primaryLight: '#e6f7ff',
-  text: '#0f172a',
-  textSecondary: '#334155',
-  muted: '#94a3b8',
-  border: '#e2e8f0',
-  background: '#f8fafc',
-  white: '#ffffff',
-  yellow: '#facc15',
-  cardBg: '#ffffff',
-  cardShadow: 'rgba(0, 0, 0, 0.05)',
-  tabInactive: '#94a3b8',
-  tabActive: '#1677ff',
-};
-
-// Spacing
-const SPACING = {
-  xs: 4,
-  sm: 8,
-  md: 16,
-  lg: 24,
-  xl: 32,
-};
-
-// Typography
-const TYPOGRAPHY = {
-  h1: {
-    fontSize: 32,
-    fontWeight: '700',
-    lineHeight: 40,
-    color: COLORS.text,
-  },
-  h2: {
-    fontSize: 24,
-    fontWeight: '600',
-    lineHeight: 32,
-    color: COLORS.text,
-  },
-  h3: {
-    fontSize: 18,
-    fontWeight: '600',
-    lineHeight: 24,
-    color: COLORS.text,
-  },
-  body: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: COLORS.text,
-  },
-  caption: {
-    fontSize: 12,
-    lineHeight: 16,
-    color: COLORS.muted,
-  },
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-    paddingBottom: Platform.OS === 'android' ? 16 : 0,
-  },
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
-    padding: SPACING.md,
-    paddingBottom: 80, // Space for bottom tabs
+    backgroundColor: '#f8fafc',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 54,
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingTop: 20,
+    paddingBottom: 10,
   },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerIcon: {
-    fontSize: 24,
-    marginRight: 8,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  notificationBtn: {
-    padding: 8,
-  },
-  notificationIcon: {
-    fontSize: 20,
-    color: COLORS.primary,
-  },
-  welcomeSection: {
-    marginBottom: SPACING.lg,
-  },
-  welcomeText: {
-    ...TYPOGRAPHY.h1,
-    color: COLORS.text,
+  greeting: {
+    fontSize: 16,
+    color: '#64748b',
+    fontWeight: '500',
   },
   userName: {
-    color: COLORS.primary,
+    fontSize: 24,
+    color: '#0f172a',
+    fontWeight: 'bold',
   },
-  // Cards
+  profileBtn: {
+    padding: 2,
+    backgroundColor: '#fff',
+    borderRadius: 25,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  profileImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 40,
+  },
   card: {
-    backgroundColor: COLORS.cardBg,
+    backgroundColor: '#fff',
     borderRadius: 16,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
-    ...Platform.select({
-      ios: {
-        shadowColor: COLORS.cardShadow,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 1,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: SPACING.md,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   cardTitle: {
-    ...TYPOGRAPHY.h3,
-    color: COLORS.text,
-    marginBottom: 0,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 4,
   },
-  // Buttons
-  hostBtn: {
-    backgroundColor: COLORS.primary,
+  cardSubtitle: {
+    fontSize: 14,
+    color: '#64748b',
+    marginBottom: 20,
+  },
+  inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: SPACING.md,
+    backgroundColor: '#f1f5f9',
     borderRadius: 12,
-    marginBottom: SPACING.md,
-    ...Platform.select({
-      ios: {
-        shadowColor: COLORS.primary,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
+    paddingHorizontal: 16,
+    height: 50,
+    marginBottom: 16,
   },
-  hostBtnIcon: {
-    marginRight: SPACING.sm,
+  inputIcon: {
+    marginRight: 12,
   },
-  hostBtnText: {
-    ...TYPOGRAPHY.body,
-    fontWeight: '600',
-    color: COLORS.white,
-  },
-  // Input and Join Section
-  joinLabel: {
-    ...TYPOGRAPHY.caption,
-    textAlign: 'center',
-    marginBottom: SPACING.sm,
-    color: COLORS.muted,
-  },
-  joinSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  meetingIdInput: {
+  input: {
     flex: 1,
-    height: 48,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 12,
-    paddingHorizontal: SPACING.md,
-    marginRight: SPACING.sm,
-    ...TYPOGRAPHY.body,
-    color: COLORS.text,
-    backgroundColor: COLORS.white,
+    fontSize: 16,
+    color: '#0f172a',
   },
   joinBtn: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: SPACING.lg,
-    height: 48,
-    borderRadius: 12,
-    justifyContent: 'center',
+    backgroundColor: '#0f172a',
+    flexDirection: 'row',
     alignItems: 'center',
-    ...Platform.select({
-      ios: {
-        shadowColor: COLORS.primary,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
+    justifyContent: 'center',
+    height: 50,
+    borderRadius: 12,
   },
   joinBtnText: {
-    ...TYPOGRAPHY.body,
+    color: '#fff',
+    fontSize: 16,
     fontWeight: '600',
-    color: COLORS.white,
+    marginRight: 8,
   },
-  // Schedule Section
-  scheduleContent: {
+  actionButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: SPACING.md,
+    gap: 12,
   },
-  scheduleInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  scheduleIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(15, 23, 42, 0.05)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: SPACING.sm,
-  },
-  scheduleText: {
-    ...TYPOGRAPHY.body,
-    color: COLORS.text,
-  },
-  scheduleBtn: {
-    backgroundColor: COLORS.yellow,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  scheduleBtnText: {
-    ...TYPOGRAPHY.caption,
-    fontWeight: '600',
-    color: COLORS.text,
-  },
-  upcomingText: {
-    ...TYPOGRAPHY.caption,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginTop: SPACING.sm,
-  },
-  viewAllText: {
-    ...TYPOGRAPHY.caption,
-    color: COLORS.primary,
-    fontWeight: '600',
-  },
-  viewMoreText: {
-    ...TYPOGRAPHY.caption,
-    color: COLORS.primary,
-    fontWeight: '500',
-    textAlign: 'right',
-    marginTop: SPACING.xs,
-  },
-  // Meeting Items
-  meetingItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: SPACING.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  meetingIconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(15, 23, 42, 0.05)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: SPACING.sm,
-  },
-  meetingInfo: {
+  actionBtn: {
     flex: 1,
-  },
-  meetingName: {
-    ...TYPOGRAPHY.body,
-    color: COLORS.text,
-    marginBottom: 2,
-  },
-  meetingTime: {
-    ...TYPOGRAPHY.caption,
-    color: COLORS.muted,
-  },
-  // Quick Actions
-  quickActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: SPACING.sm,
-  },
-  actionItem: {
-    alignItems: 'center',
-    width: '48%',
-    padding: SPACING.md,
+    backgroundColor: '#f8fafc',
     borderRadius: 12,
-    backgroundColor: COLORS.white,
-    ...Platform.select({
-      ios: {
-        shadowColor: COLORS.cardShadow,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 1,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
+    padding: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
-  actionIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  primaryActionBtn: {
+    backgroundColor: '#2563eb',
+    borderColor: '#2563eb',
+  },
+  iconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: SPACING.sm,
+    marginBottom: 12,
   },
-  actionText: {
-    ...TYPOGRAPHY.caption,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
+  secondaryIconCircle: {
+    backgroundColor: '#e2e8f0',
   },
-  // Bottom Navigation
-  bottomNav: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    paddingVertical: SPACING.sm,
-    backgroundColor: COLORS.white,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 8,
-      },
-    }),
-  },
-  navItem: {
-    alignItems: 'center',
-    padding: SPACING.xs,
-    flex: 1,
-  },
-  navItemActive: {
-    alignItems: 'center',
-    padding: SPACING.xs,
-    flex: 1,
-  },
-  navIcon: {
-    marginBottom: SPACING.xs / 2,
-  },
-  navLabel: {
-    ...TYPOGRAPHY.caption,
-    color: COLORS.tabInactive,
-    fontSize: 10,
-    marginTop: 2,
-  },
-  navLabelActive: {
-    ...TYPOGRAPHY.caption,
-    color: COLORS.tabActive,
+  actionBtnText: {
+    fontSize: 14,
     fontWeight: '600',
-    fontSize: 10,
-    marginTop: 2,
+    color: '#fff',
   },
 });
+
+export default PrivateLanding;

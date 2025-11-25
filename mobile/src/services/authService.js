@@ -18,6 +18,7 @@ export const requestOTP = async (email) => {
   }
 };
 
+
 // Verify OTP
 export const verifyOTP = async (email, otp) => {
   try {
