@@ -15,7 +15,18 @@ export const authenticate = (req, res, next) => {
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
 
-    req.user = { id: decoded.userId };
+    // Extract userId - handle both cases where userId might be a number/string or an object
+    let userId = decoded.userId;
+    if (userId && typeof userId === 'object') {
+      // If userId is an object (from old token format), extract the actual ID
+      userId = userId.userId || userId.id;
+    }
+    
+    if (!userId) {
+      return res.status(401).json({ error: 'Invalid token: missing user ID' });
+    }
+    
+    req.user = { id: userId };
     next();
   } catch (error) {
     console.error('Authentication error:', error);

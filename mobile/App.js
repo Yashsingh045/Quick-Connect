@@ -6,6 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
 
 import { ActivityIndicator, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // Import screens
 import PublicLanding from './src/screens/PublicLanding';
@@ -24,53 +25,53 @@ const Stack = createNativeStackNavigator();
 const AuthStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="PublicLanding" component={PublicLanding} />
-    <Stack.Screen 
-      name="Login" 
-      component={LoginScreen} 
-      options={{ 
+    <Stack.Screen
+      name="Login"
+      component={LoginScreen}
+      options={{
         title: 'Sign In',
         headerShown: true,
         headerBackTitle: 'Back'
-      }} 
+      }}
     />
-    <Stack.Screen 
-      name="Register" 
-      component={RegisterScreen} 
-      options={{ 
+    <Stack.Screen
+      name="Register"
+      component={RegisterScreen}
+      options={{
         title: 'Create Account',
         headerShown: true,
         headerBackTitle: 'Back'
-      }} 
+      }}
     />
-    <Stack.Screen 
-      name="ForgotPassword" 
-      component={ForgotPasswordScreen} 
-      options={{ 
+    <Stack.Screen
+      name="ForgotPassword"
+      component={ForgotPasswordScreen}
+      options={{
         title: 'Reset Password',
         headerShown: true,
         headerBackTitle: 'Back'
-      }} 
+      }}
     />
   </Stack.Navigator>
 );
 
 const AppStack = () => (
   <Stack.Navigator>
-    <Stack.Screen 
-      name="PrivateLanding" 
-      component={PrivateLanding} 
-      options={{ 
+    <Stack.Screen
+      name="PrivateLanding"
+      component={PrivateLanding}
+      options={{
         title: 'Home',
         headerShown: true
-      }} 
+      }}
     />
-    <Stack.Screen 
-      name="MeetingRoom" 
-      component={MeetingRoom} 
-      options={{ 
+    <Stack.Screen
+      name="MeetingRoom"
+      component={MeetingRoom}
+      options={{
         title: 'Meeting Room',
         headerShown: true
-      }} 
+      }}
     />
   </Stack.Navigator>
 );
@@ -98,9 +99,11 @@ export default function App() {
     <ErrorBoundary>
       <AuthProvider>
 
-          <GestureHandlerRootView style={{ flex: 1 }}>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <SafeAreaProvider>
             <RootNavigator />
-          </GestureHandlerRootView>
+          </SafeAreaProvider>
+        </GestureHandlerRootView>
 
       </AuthProvider>
     </ErrorBoundary>

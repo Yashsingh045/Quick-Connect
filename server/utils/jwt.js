@@ -8,14 +8,26 @@ const ACCESS_TOKEN_EXPIRY = '15m';
 const REFRESH_TOKEN_EXPIRY = '7d';
 
 export const generateTokens = (userId) => {
+  // Handle both cases: userId as a number/string or as an object
+  let actualUserId = userId;
+  if (userId && typeof userId === 'object') {
+    // If userId is an object, extract the actual ID
+    actualUserId = userId.userId || userId.id;
+  }
+  
+  // Ensure we have a valid userId
+  if (!actualUserId) {
+    throw new Error('userId is required and must be a valid identifier');
+  }
+
   const accessToken = jwt.sign(
-    { userId },
+    { userId: actualUserId },
     JWT_SECRET,
     { expiresIn: ACCESS_TOKEN_EXPIRY }
   );
 
   const refreshToken = jwt.sign(
-    { userId, type: 'refresh' },
+    { userId: actualUserId, type: 'refresh' },
     JWT_SECRET,
     { expiresIn: REFRESH_TOKEN_EXPIRY }
   );

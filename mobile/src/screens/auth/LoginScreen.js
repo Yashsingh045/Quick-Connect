@@ -11,31 +11,31 @@ const LoginScreen = ({ navigation }) => {
 
   const { login } = useAuth();
 
-  const handleLogin = async () => {
-    // Basic validation
-    if (!email || !password) {
-      setError('Please enter both email and password');
-      return;
-    }
+const handleLogin = async () => {
+  // Basic validation
+  if (!email || !password) {
+    setError('Please enter both email and password');
+    return;
+  }
 
-    // Email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError('Please enter a valid email address');
-      return;
-    }
+  // Email format validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    setError('Please enter a valid email address');
+    return;
+  }
 
-    setIsLoading(true);
-    setError('');
+  setIsLoading(true);
+  setError('');
 
-    try {
-    const result = await login(email.trim().toLowerCase(), password);
-    
+  try {
+    const result = await login(email, password);
     if (result.success) {
-      // Login successful
+      // Only navigate on successful login
+      // The navigation will be handled by the AuthNavigator based on the auth state
       console.log('Login successful');
     } else {
-      setError(result.error || 'Login failed. Please check your credentials.');
+      setError(result.error || 'Invalid email or password');
     }
   } catch (error) {
     console.error('Login error:', error);
@@ -144,10 +144,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   error: {
-    color: 'red',
-    marginBottom: 15,
-    textAlign: 'center',
-  },
+  color: 'red',
+  marginBottom: 15,
+  textAlign: 'center',
+  padding: 10,
+  backgroundColor: '#ffebee',
+  borderRadius: 5,
+  width: '100%',
+}
 });
 
 export default LoginScreen;
