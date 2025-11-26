@@ -104,56 +104,53 @@ const handleApiError = (error) => {
 };
 
 // Request interceptor to add auth token
+// In mobile/src/services/api.js
+
+// Add this right after the axios instance creation
 api.interceptors.request.use(
-  async (config) => {
-    try {
-      const token = await AsyncStorage.getItem('accessToken');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      if (__DEV__) {
-        console.log('API Request:', {
-          url: config.url,
-          method: config.method,
-          data: config.data,
-        });
-      }
-      return config;
-    } catch (error) {
-      console.error('Error in request interceptor:', error);
-      return Promise.reject(handleApiError(error));
-    }
+  config => {
+    console.log('API Request:', {
+      url: config.url,
+      method: config.method,
+      data: config.data,
+      baseURL: config.baseURL
+    });
+    return config;
   },
-  (error) => {
-    console.error('Request interceptor error:', error);
-    return Promise.reject(handleApiError(error));
+  error => {
+    console.error('Request Error:', error);
+    return Promise.reject(error);
   }
 );
 
-// Response interceptor to handle errors and transform responses
 api.interceptors.response.use(
-  (response) => {
-    // Transform successful responses to include success flag
-    const transformedResponse = {
-      ...response,
-      data: {
-        success: true,
-        ...(response.data || {})
+  response => {
+    console.log('API Response:', {
+      status: response.status,
+      data: response.data,
+      config: {
+        url: response.config.url,
+        method: response.config.method
       }
-    };
-
-    if (__DEV__) {
-      console.log('API Response:', {
-        status: response.status,
-        data: response.data,
-      });
-    }
-    return transformedResponse;
+    });
+    return response;
   },
-  (error) => {
-    const errorResponse = handleApiError(error);
-    return Promise.reject(errorResponse);
+  error => {
+    console.error('API Error:', {
+      message: error.message,
+      response: error.response ? {
+        status: error.response.status,
+        data: error.response.data,
+        headers: error.response.headers
+      } : 'No response',
+      request: error.request ? 'Request was made but no response received' : 'No request was made',
+      config: {
+        url: error.config?.url,
+        method: error.config?.method,
+        baseURL: error.config?.baseURL
+      }
+    });
+    return Promise.reject(error);
   }
 );
-
 export default api;

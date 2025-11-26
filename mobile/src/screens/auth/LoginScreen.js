@@ -29,21 +29,21 @@ const LoginScreen = ({ navigation }) => {
     setError('');
 
     try {
-      const result = await login(email.trim().toLowerCase(), password);
-      
-      if (!result.success) {
-        setError(result.error || 'Login failed. Please check your credentials.');
-      } else {
-        // Login successful - navigation is handled by the AuthContext or RootNavigator
-        console.log('Login successful');
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      setError('An unexpected error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
+    const result = await login(email.trim().toLowerCase(), password);
+    
+    if (result.success) {
+      // Login successful
+      console.log('Login successful');
+    } else {
+      setError(result.error || 'Login failed. Please check your credentials.');
     }
-  };
+  } catch (error) {
+    console.error('Login error:', error);
+    setError('An unexpected error occurred. Please try again.');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <View style={styles.container}>
@@ -69,9 +69,9 @@ const LoginScreen = ({ navigation }) => {
       />
       
       <TouchableOpacity 
-        style={[styles.button, isLoading && styles.buttonDisabled]}
+        style={[styles.button, (isLoading || !email || !password) && styles.buttonDisabled]}
         onPress={handleLogin} 
-        disabled={isLoading}
+        disabled={isLoading || !email || !password}
         activeOpacity={0.8}
       >
         {isLoading ? (
