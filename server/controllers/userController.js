@@ -1,93 +1,173 @@
 import dotenv from 'dotenv';
 import prisma from '../config/config.js';
 import bcrypt from 'bcryptjs';
-import { generateTokens } from '../utils/jwt.js';
-import { generateEmailVerificationToken, generatePasswordResetToken } from '../utils/tokenUtils.js';
-import { sendVerificationEmail, sendPasswordResetEmail } from '../utils/emailService.js';
+import { generateTokens, verifyToken } from '../utils/jwt.js';
+import { createAndSendOTP, verifyOTPService, deleteOTP } from '../services/otpServices.js';
 
-// Register a new user
+dotenv.config();
 
-export const createUser = async (req, res) => {
+// Request OTP for password reset or verification
+export const requestOTP = async (req, res) => {
   try {
-    const { username, password, email } = req.body;
+    const { email } = req.body;
 
-    if (!username || !email || !password) {
+    if (!email) {
       return res.status(400).json({
         success: false,
-        message: "Name, email, and password are required",
+        message: 'Email is required',
       });
     }
 
-    const usernameLower = username.trim().toLowerCase();
-    const emailLower = email.trim()?.toLowerCase();
-
-    const findUser = await prisma.user.findUnique({
-      where: {
-        email: email.toLowerCase(),
-      },
-    });
-
-    if (findUser) {
-      return res.status(400).json({ message: "User already exists" });
-    }
-
-    if (password.length < 6) {
-      return res.status(400).json({
+    // Check if user exists (for password reset)
+    const user = await prisma.users.findUnique({ where: { email } });
+    if (!user) {
+      return res.status(404).json({
         success: false,
-        message: "Password must be at least 6 characters long",
+        message: 'User not found',
       });
     }
 
-    // password hashing
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // This will generate, store, and send the OTP in one go
+    const { success, error } = await createAndSendOTP(email);
+    
+    if (!success) {
+      console.error('Failed to send OTP:', error);
+      return res.status(500).json({ 
+        success: false, 
+        message: error || 'Failed to send OTP. Please try again.' 
+      });
+    }
 
-
-     const { token, expiresAt } = generateEmailVerificationToken();
-
-    // Create new user
-
-    const newUser = await prisma.users.create({
-      data: {
-        username: usernameLower,
-        email: emailLower,
-        password: hashedPassword,
-        emailVerifyToken: token,
-        emailVerifyExpiry: expiresAt
-      },
-    });
-
-    // Send verification email
-    await sendVerificationEmail(newUser, token);
-
-    // Generate JWT tokens but don't log in until email is verified
-    const { accessToken, refreshToken } = generateTokens(newUser.id);
-
-    res.status(201).json({
+    res.status(200).json({
       success: true,
-      message: 'Registration successful. Please check your email to verify your account.',
-      data: {
-        user: {
-          id: newUser.id,
-          username: newUser.username,
-          email: newUser.email,
-          emailVerified: newUser.emailVerified
-        },
-        tokens: {
-          accessToken,
-          refreshToken
-        }
-      }
+      message: 'OTP sent successfully',
     });
   } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({ 
+    console.error('Error in requestOTP:', error);
+    res.status(500).json({
       success: false,
-      message: 'Registration failed',
-      error: error.message 
+      message: 'An error occurred while processing your request',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
 
+
+export const verifyOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    const { success, error } = await verifyOTPService(email, otp);
+    
+    if (!success) {
+      return res.status(400).json({ 
+        success: false, 
+        message: error || 'Invalid or expired OTP' 
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'OTP verified successfully',
+    });
+  } catch (error) {
+    console.error('Error in verifyOTP controller:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to verify OTP',
+    });
+  }
+};
+
+// Register a new user
+
+// server/controllers/userController.js
+export const createUser = async (req, res) => {
+  try {
+    const { email, name, password, otp } = req.body;
+
+    // Input validation
+    if (!email || !name || !password || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: 'All fields are required'
+      });
+    }
+
+    // Verify OTP first
+    const otpVerification = await verifyOTPService(email, otp);
+    if (!otpVerification.success) {
+      return res.status(400).json({
+        success: false,
+        message: otpVerification.error || 'Invalid or expired OTP'
+      });
+    }
+
+    // Check if user already exists
+    const existingUser = await prisma.users.findUnique({ where: { email } });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'User already exists'
+      });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user in the database with error handling
+    let user;
+    try {
+      user = await prisma.users.create({
+        data: {
+          email,
+          password: hashedPassword,
+          userName: name
+        }
+      });
+    } catch (dbError) {
+      console.error('Database error during user creation:', dbError);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to create user in database',
+        error: process.env.NODE_ENV === 'development' ? dbError.message : undefined
+      });
+    }
+
+    // Generate tokens
+    const { accessToken, refreshToken } = generateTokens({
+      userId: user.id,
+      email: user.email
+    });
+
+    // Omit sensitive data from the response
+    const { password: _, ...userData } = user;
+
+    // Delete the used OTP
+    try {
+      await deleteOTP(email);
+    } catch (otpError) {
+      console.error('Error deleting OTP after registration:', otpError);
+      // Don't fail the registration if OTP deletion fails
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'User registered successfully',
+      data: {
+        user: userData,
+        tokens: { accessToken, refreshToken }
+      }
+    });
+
+  } catch (error) {
+    console.error('Error in registerUser controller:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to register user',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
 // User login
 export const loginUser = async (req, res) => {
   try {
@@ -100,12 +180,17 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    const emailLower = email.toLowerCase();
+    // Convert email to lowercase for case-insensitive comparison
+    const emailLower = email.toLowerCase().trim();
 
-    const user = await prisma.user.findUnique({
+    // Find user with case-insensitive email
+    const user = await prisma.users.findFirst({
       where: {
-        email: emailLower,
-      },
+        email: {
+          equals: emailLower,
+          mode: 'insensitive'
+        }
+      }
     });
 
     if (!user) {
@@ -115,7 +200,7 @@ export const loginUser = async (req, res) => {
       });
     }
 
-     if (!user.emailVerified) {
+    if (!user.emailVerified) {
       return res.status(403).json({
         success: false,
         message: 'Please verify your email before logging in'
@@ -130,23 +215,27 @@ export const loginUser = async (req, res) => {
         message: "Invalid email or password"
       });
     }
-    // Generate JWT tokens
-    const { accessToken, refreshToken } = generateTokens(user.id);
+
+    // Generate JWT tokens with required user data
+    const { accessToken, refreshToken } = generateTokens({
+      userId: user.id,
+      email: user.email
+    });
 
     // Update user's refresh token in database
-    await prisma.user.update({
+    await prisma.users.update({
       where: { id: user.id },
       data: { refreshToken }
     });
 
-    // Remove password from user object
-    const { password: _, ...userWithoutPassword } = user;
+    // Remove sensitive data from user object
+    const { password: _, refreshToken: rt, ...userWithoutSensitiveData } = user;
 
     res.status(200).json({
       success: true,
       message: 'Login successful',
       data: {
-        user: userWithoutPassword,
+        user: userWithoutSensitiveData,
         tokens: {
           accessToken,
           refreshToken
@@ -157,8 +246,8 @@ export const loginUser = async (req, res) => {
     console.error('Login error:', error);
     res.status(500).json({ 
       success: false,
-      message: 'Login failed',
-      error: error.message 
+      message: 'An error occurred during login',
+      ...(process.env.NODE_ENV === 'development' && { error: error.message })
     });
   }
 };
@@ -168,7 +257,7 @@ export const verifyEmail = async (req, res) => {
   try {
     const { token } = req.params;
     
-    const user = await prisma.user.findFirst({
+    const user = await prisma.users.findFirst({
       where: {
         emailVerifyToken: token,
         emailVerifyExpiry: {
@@ -184,7 +273,7 @@ export const verifyEmail = async (req, res) => {
       });
     }
 
-    await prisma.user.update({
+    await prisma.users.update({
       where: { id: user.id },
       data: {
         emailVerified: true,
@@ -212,7 +301,7 @@ export const requestPasswordReset = async (req, res) => {
   try {
     const { email } = req.body;
     
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { email }
     });
 
@@ -226,7 +315,7 @@ export const requestPasswordReset = async (req, res) => {
 
     const { token, expiresAt } = generatePasswordResetToken();
     
-    await prisma.user.update({
+    await prisma.users.update({
       where: { id: user.id },
       data: {
         resetToken: token,
@@ -251,6 +340,74 @@ export const requestPasswordReset = async (req, res) => {
 
 
 
+// Refresh access token using refresh token
+export const refreshToken = async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return res.status(400).json({
+        success: false,
+        message: 'Refresh token is required',
+      });
+    }
+
+    // Verify the refresh token
+    const decoded = verifyToken(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    
+    if (!decoded) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid or expired refresh token',
+      });
+    }
+
+    // Find the user
+    const user = await prisma.users.findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        is_verified: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Generate new tokens
+    const { accessToken, refreshToken: newRefreshToken } = generateTokens({
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+    });
+
+    res.status(200).json({
+      success: true,
+      accessToken,
+      refreshToken: newRefreshToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        is_verified: user.is_verified,
+      },
+    });
+  } catch (error) {
+    console.error('Error refreshing token:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error refreshing token',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+    });
+  }
+};
+
 export const resetPassword = async (req, res) => {
   try {
     const { token, newPassword } = req.body;
@@ -262,7 +419,7 @@ export const resetPassword = async (req, res) => {
       });
     }
 
-    const user = await prisma.user.findFirst({
+    const user = await prisma.users.findFirst({
       where: {
         resetToken: token,
         resetTokenExpiry: {
@@ -281,7 +438,7 @@ export const resetPassword = async (req, res) => {
     // Hash the new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    await prisma.user.update({
+    await prisma.users.update({
       where: { id: user.id },
       data: {
         password: hashedPassword,

@@ -1,43 +1,72 @@
-// mobile/src/services/authService.js
+// In authService.js
 import api from './api';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const login = async (email, password) => {
-  const response = await api.post('/auth/login', { email, password });
-  const { accessToken, refreshToken, user } = response.data;
-  
-  await Promise.all([
-    AsyncStorage.setItem('accessToken', accessToken),
-    AsyncStorage.setItem('refreshToken', refreshToken),
-  ]);
-  
-  return { user, token: accessToken }; // Return token for AuthContext
+// Request OTP for registration
+export const requestOTP = async (email) => {
+  try {
+    const response = await api.post('/auth/request-otp', { email });
+    return { 
+      success: true, 
+      data: response.data 
+    };
+  } catch (error) {
+    console.error('OTP request error:', error);
+    return { 
+      success: false, 
+      error: error.response?.data?.message || 'Failed to send OTP' 
+    };
+  }
 };
 
+// Verify OTP
+export const verifyOTP = async (email, otp) => {
+  try {
+    const response = await api.post('/auth/verify-otp', { email, otp });
+    return { 
+      success: true, 
+      data: response.data 
+    };
+  } catch (error) {
+    console.error('OTP verification error:', error);
+    return { 
+      success: false, 
+      error: error.response?.data?.message || 'Invalid OTP' 
+    };
+  }
+};
+
+// Register user with OTP verification
 export const register = async (userData) => {
-  const response = await api.post('/auth/register', userData);
-  return response.data;
+  try {
+    // This will be called after OTP is verified
+    const response = await api.post('/auth/register', userData);
+    return { 
+      success: true, 
+      data: response.data,
+      message: 'Registration successful! Please log in.'
+    };
+  } catch (error) {
+    console.error('Registration error:', error);
+    return { 
+      success: false, 
+      error: error.response?.data?.message || 'Registration failed' 
+    };
+  }
 };
 
-export const logout = async () => {
-  await Promise.all([
-    AsyncStorage.removeItem('accessToken'),
-    AsyncStorage.removeItem('refreshToken'),
-  ]);
-  return true;
-};
-
-export const getCurrentUser = async () => {
-  const response = await api.get('/auth/me');
-  return response.data;
-};
-
-export const requestPasswordReset = async (email) => {
-  const response = await api.post('/auth/forgot-password', { email });
-  return response.data;
-};
-
-export const resetPassword = async (token, newPassword) => {
-  const response = await api.post('/auth/reset-password', { token, newPassword });
-  return response.data;
+// Login user
+export const login = async (email, password) => {
+  try {
+    const response = await api.post('/auth/login', { email, password });
+    return { 
+      success: true, 
+      data: response.data 
+    };
+  } catch (error) {
+    console.error('Login error:', error);
+    return { 
+      success: false, 
+      error: error.response?.data?.message || 'Login failed' 
+    };
+  }
 };

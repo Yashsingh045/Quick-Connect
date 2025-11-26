@@ -1,66 +1,46 @@
 // mobile/src/contexts/AuthContext.js
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useContext, useState } from 'react';
+import api from '../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as authService from '../services/authService';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    // Check if user is logged in on app start
-    const loadUser = async () => {
-      try {
-        const accessToken = await AsyncStorage.getItem('accessToken');
-        if (accessToken) {
-          const userData = await authService.getCurrentUser();
-          setUser(userData);
+  const register = async (name, email, password, otp) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await api.post('/auth/register', {
+        name,
+        email,
+        password,
+        otp
+      });
+
+      if (response.data.success) {
+        // Optionally log the user in after successful registration
+        const { user, tokens } = response.data.data;
+        if (tokens) {
+          await AsyncStorage.setItem('accessToken', tokens.accessToken);
+          if (tokens.refreshToken) {
+            await AsyncStorage.setItem('refreshToken', tokens.refreshToken);
+          }
+          setUser(user);
         }
-      } catch (error) {
-        console.error('Error loading user:', error);
-      } finally {
-        setIsLoading(false);
+        return response.data;
       }
-    };
-
-    loadUser();
-  }, []);
-
-  const login = async (email, password) => {
-    try {
-      const { user, token } = await authService.login(email, password);
-      await AsyncStorage.setItem('accessToken', token);
-      setUser(user);
-      return { success: true };
+      throw new Error(response.data.message || 'Registration failed');
     } catch (error) {
-      return { success: false, error: error.message };
-    }
-  };
-
-  const register = async (userData) => {
-    try {
-      await authService.register(userData);
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
-  };
-
-  const logout = async () => {
-    try {
-      await AsyncStorage.removeItem('accessToken');
-      setUser(null);
-    } catch (error) {
-      console.error('Error during logout:', error);
-    }
-    try {
-      await authService.logout();
-      setUser(null);
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: error.message };
+      console.error('Registration error:', error);
+      const message = error.response?.data?.message || error.message || 'Registration failed. Please try again.';
+      setError(message);
+      throw new Error(message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -69,10 +49,8 @@ export const AuthProvider = ({ children }) => {
       value={{
         user,
         isLoading,
-        isAuthenticated: !!user,
-        login,
+        error,
         register,
-        logout,
       }}
     >
       {children}
@@ -81,5 +59,9 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };
