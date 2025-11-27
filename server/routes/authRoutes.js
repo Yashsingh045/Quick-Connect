@@ -1,17 +1,20 @@
 // server/routes/authRoutes.js
 import express from 'express';
-import { 
-  loginUser, 
-  createUser, 
+import {
+  loginUser,
+  createUser,
   refreshToken,
   verifyEmail,
   requestPasswordReset,
-  resetPassword
+  resetPassword,
+  getCurrentUser
 } from '../controllers/userController.js';
 import { refreshTokenMiddleware } from '../middleware/auth.js';
 import { createAndSendOTP, verifyOTPService } from '../services/otpServices.js';
 
 const router = express.Router();
+
+router.get("/me", getCurrentUser);
 
 router.post('/login', loginUser);
 router.post('/refresh-token', refreshTokenMiddleware, refreshToken);
@@ -29,29 +32,29 @@ router.post('/request-otp', async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Email is required' 
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required'
       });
     }
-    
+
     const result = await createAndSendOTP(email, 'registration');
     if (result.success) {
-      res.status(200).json({ 
-        success: true, 
-        message: 'OTP sent successfully' 
+      res.status(200).json({
+        success: true,
+        message: 'OTP sent successfully'
       });
     } else {
-      res.status(400).json({ 
-        success: false, 
-        message: result.error || 'Failed to send OTP' 
+      res.status(400).json({
+        success: false,
+        message: result.error || 'Failed to send OTP'
       });
     }
   } catch (error) {
     console.error('Error in request-otp:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Internal server error' 
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
     });
   }
 });
@@ -134,7 +137,7 @@ router.post('/register', createUser);
 //     }
 
 //     // Rest of the code remains the same...
-    
+
 //   } catch (error) {
 //     console.error('Registration route error:', {
 //       message: error.message,
@@ -158,33 +161,33 @@ router.post('/register', createUser);
 router.post('/verify-otp', async (req, res) => {
   try {
     const { email, otp } = req.body;
-    
+
     if (!email || !otp) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Email and OTP are required' 
+      return res.status(400).json({
+        success: false,
+        message: 'Email and OTP are required'
       });
     }
 
     const result = await verifyOTPService(email, otp);
-    
+
     if (result.success) {
-      res.status(200).json({ 
-        success: true, 
+      res.status(200).json({
+        success: true,
         message: 'OTP verified successfully',
         data: result.data
       });
     } else {
-      res.status(400).json({ 
-        success: false, 
-        message: result.error || 'Invalid or expired OTP' 
+      res.status(400).json({
+        success: false,
+        message: result.error || 'Invalid or expired OTP'
       });
     }
   } catch (error) {
     console.error('Error in verify-otp:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Internal server error during OTP verification' 
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error during OTP verification'
     });
   }
 });
@@ -196,9 +199,9 @@ router.get('/test-db', async (req, res) => {
     res.json({ success: true, count: users.length });
   } catch (error) {
     console.error('Database test error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: error.message 
+    res.status(500).json({
+      success: false,
+      error: error.message
     });
   }
 });
