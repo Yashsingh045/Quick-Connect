@@ -1,15 +1,12 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "Quick Connect",
+    "slug": "quick-connect",
+    "scheme": "quickconnect",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "jsEngine": "hermes",
-    "runtimeVersion": {
-      "policy": "sdkVersion"
-    },
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -17,29 +14,29 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.quickconnect.mobile",
-      "jsEngine": "hermes"
+      "bundleIdentifier": "com.quickconnect.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "jsEngine": "hermes",
-      "package": "com.quickconnect.mobile"
+      "package": "com.quickconnect.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "extra": {
+      "eas": {
+        "projectId": "1124edfd-1c1e-4f07-98ec-3ebfd84f116e"
+      }
+    },
+    "owner": "yashsingh_045",
     "plugins": [
-      [
-        "expo-build-properties",
-        {
-          "ios": {
-            "useFrameworks": "static"
-          }
-        }
-      ]
+      "expo-font"
     ]
   }
 }

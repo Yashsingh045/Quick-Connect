@@ -2,8 +2,9 @@
 import 'react-native-gesture-handler';
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
+
 import { ActivityIndicator, View } from 'react-native';
 
 // Import screens
@@ -12,15 +13,13 @@ import PrivateLanding from './src/screens/PrivateLanding';
 import LoginScreen from './src/screens/auth/LoginScreen';
 import RegisterScreen from './src/screens/auth/RegisterScreen';
 import ForgotPasswordScreen from './src/screens/auth/ForgotPasswordScreen';
-
+import MeetingRoom from './src/screens/MeetingRoom';
 
 import 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-
 import ErrorBoundary from './src/components/ErrorBoundary';
 
-
-const Stack = createStackNavigator();
+const Stack = createNativeStackNavigator();
 
 const AuthStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -65,7 +64,14 @@ const AppStack = () => (
         headerShown: true
       }} 
     />
-    {/* Add other private screens here */}
+    <Stack.Screen 
+      name="MeetingRoom" 
+      component={MeetingRoom} 
+      options={{ 
+        title: 'Meeting Room',
+        headerShown: true
+      }} 
+    />
   </Stack.Navigator>
 );
 
@@ -91,9 +97,11 @@ export default function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <RootNavigator />
-        </GestureHandlerRootView>
+
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <RootNavigator />
+          </GestureHandlerRootView>
+
       </AuthProvider>
     </ErrorBoundary>
   );
