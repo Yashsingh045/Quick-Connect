@@ -38,7 +38,7 @@ const handleApiError = (error) => {
     // that falls out of the range of 2xx
     statusCode = error.response.status;
     errorData = error.response.data;
-    
+
     // Handle specific status codes
     switch (statusCode) {
       case 400:
