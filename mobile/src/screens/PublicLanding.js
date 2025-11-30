@@ -1,12 +1,12 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, Platform } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, Platform, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import PropTypes from 'prop-types';
 
 export default function PublicLanding({ onJoin }) {
   const navigation = useNavigation();
-  
+
   const onJoinPress = () => {
     if (onJoin) {
       onJoin();
@@ -15,7 +15,7 @@ export default function PublicLanding({ onJoin }) {
       navigation.navigate('Login');
     }
   };
-  
+
   const onSignInPress = () => {
     navigation.navigate('Login');
   };
@@ -23,16 +23,12 @@ export default function PublicLanding({ onJoin }) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
 
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.appTitle}>Quick Connect</Text>
-          <TouchableOpacity style={styles.menuIcon} activeOpacity={0.7}>
-            <View style={styles.menuIconLine} />
-            <View style={[styles.menuIconLine, { width: 18 }]} />
-            <View style={styles.menuIconLine} />
-          </TouchableOpacity>
+          <Image source={require('../../assets/icon.png')} style={styles.avatar} />
         </View>
 
         <View style={styles.content}>
@@ -54,16 +50,16 @@ export default function PublicLanding({ onJoin }) {
 
         {/* Buttons */}
         <View style={styles.buttonContainer}>
-          <TouchableOpacity 
-            style={styles.primaryBtn} 
+          <TouchableOpacity
+            style={styles.primaryBtn}
             onPress={onSignInPress}
             activeOpacity={0.9}
           >
             <Text style={styles.primaryBtnText}>Sign In</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={styles.secondaryBtn} 
+          <TouchableOpacity
+            style={styles.secondaryBtn}
             onPress={onJoinPress}
             activeOpacity={0.9}
           >
@@ -77,8 +73,9 @@ export default function PublicLanding({ onJoin }) {
 
 const BLUE = '#1677ff';
 const WHITE = '#fff';
-const DARK = '#0a0a0a';
-const MUTED = '#9ca3af';
+const LIGHT_BG = '#f8fafc';
+const DARK_TEXT = '#0f172a';
+const MUTED_TEXT = '#64748b';
 const SPACING = 16;
 
 PublicLanding.propTypes = {
@@ -88,11 +85,11 @@ PublicLanding.propTypes = {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: DARK,
+    backgroundColor: LIGHT_BG,
   },
   container: {
     flex: 1,
-    backgroundColor: DARK,
+    backgroundColor: LIGHT_BG,
     paddingHorizontal: SPACING * 1.5,
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
@@ -101,28 +98,20 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: SPACING,
-    marginBottom: SPACING * 2,
+    marginBottom: SPACING * 10,
+    marginTop: SPACING * 4,
   },
   appTitle: {
-    color: WHITE,
+    color: DARK_TEXT,
     fontWeight: '700',
     fontSize: 22,
     letterSpacing: 0.5,
+
   },
-  menuIcon: {
+  avatar: {
     padding: SPACING / 2,
-  },
-  menuIconLine: {
-    width: 24,
-    height: 2,
-    backgroundColor: WHITE,
-    marginVertical: 3,
-    borderRadius: 2,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    marginTop: -SPACING * 4,
+    height: 50,
+    width: 50,
   },
   secureText: {
     color: BLUE,
@@ -132,7 +121,7 @@ const styles = StyleSheet.create({
     marginBottom: SPACING * 2,
   },
   mainHeading: {
-    color: WHITE,
+    color: DARK_TEXT,
     fontWeight: '800',
     fontSize: 40,
     lineHeight: 44,
@@ -142,11 +131,11 @@ const styles = StyleSheet.create({
     color: BLUE,
   },
   description: {
-    color: MUTED,
+    color: MUTED_TEXT,
     fontSize: 15,
     lineHeight: 24,
     marginTop: SPACING * 2,
-    marginBottom: SPACING * 3,
+    marginBottom: SPACING * 5,
     paddingRight: SPACING * 2,
   },
   buttonContainer: {
@@ -158,6 +147,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     marginBottom: SPACING,
+    marginTop: SPACING * 1.4,
     shadowColor: BLUE,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -171,15 +161,16 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   secondaryBtn: {
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderColor: '#e2e8f0',
     borderWidth: 1.5,
     paddingVertical: SPACING + 2,
     borderRadius: 10,
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    backgroundColor: '#ffffff',
+    marginBottom: SPACING * 3,
   },
   secondaryBtnText: {
-    color: WHITE,
+    color: DARK_TEXT,
     fontWeight: '600',
     fontSize: 16,
     letterSpacing: 0.3,
