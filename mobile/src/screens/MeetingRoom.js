@@ -81,6 +81,8 @@ const MeetingRoom = () => {
         buttons: [],
         isVisible: false,
       },
+      // Disable reporting to prevent NullPointerException
+      disableReporting: true,
     }),
     [handleLeave],
   );
@@ -232,27 +234,14 @@ const MeetingRoom = () => {
 
       {/* Zego video area */}
       <View style={styles.videoContainer}>
-        {(() => {
-          console.log('[MeetingRoom] Rendering Zego with config:', {
-            appID: zegoConfig.appID,
-            appIDType: typeof zegoConfig.appID,
-            tokenLength: zegoConfig.token?.length,
-            userID: zegoConfig.userID,
-            userName: zegoConfig.userName,
-            conferenceID: zegoConfig.conferenceID,
-          });
-
-          return (
-            <ZegoUIKitPrebuiltVideoConference
-              appID={zegoConfig.appID}
-              token={zegoConfig.token}
-              userID={zegoConfig.userID}
-              userName={zegoConfig.userName}
-              conferenceID={zegoConfig.conferenceID}
-              config={conferenceConfig}
-            />
-          );
-        })()}
+        <ZegoUIKitPrebuiltVideoConference
+          appID={zegoConfig.appID}
+          token={zegoConfig.token}
+          userID={zegoConfig.userID}
+          userName={zegoConfig.userName}
+          conferenceID={zegoConfig.conferenceID}
+          config={conferenceConfig}
+        />
       </View>
     </View>
   );

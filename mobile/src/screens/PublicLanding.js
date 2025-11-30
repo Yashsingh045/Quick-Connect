@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING,
     marginBottom: SPACING * 10,
-    marginTop: SPACING * 4,
+    marginTop: SPACING * 2.5,
     boxSizing: 'border-box',
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
     borderRadius: 10,
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     width: 50,
   },
   content: {
-    marginTop: -SPACING * 10,
+    marginTop: -SPACING * 9,
   },
   secureText: {
     color: BLUE,
