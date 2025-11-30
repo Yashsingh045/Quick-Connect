@@ -24,8 +24,16 @@ const RecentMeetingsCard = ({ recentMeetings, onViewAll }) => {
                             <Ionicons name="time-outline" size={20} color="#64748b" />
                         </View>
                         <View style={styles.meetingDetails}>
-                            <Text style={styles.meetingTitle}>{meeting.roomName || `Meeting ${meeting.id}`}</Text>
-                            <Text style={styles.meetingTime}>{new Date(meeting.date).toLocaleString()}</Text>
+                            <Text style={styles.meetingTitle}>{meeting.title || `Meeting ${meeting.meetingId}`}</Text>
+                            <Text style={styles.meetingTime}>
+                                {new Date(meeting.meetingFrom).toLocaleDateString(undefined, {
+                                    weekday: 'short',
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: 'numeric',
+                                    minute: '2-digit',
+                                })}
+                            </Text>
                         </View>
                     </View>
                 ))
@@ -49,6 +57,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.05,
         shadowRadius: 8,
         elevation: 2,
+        marginBottom: 50,
     },
     cardHeader: {
         flexDirection: 'row',

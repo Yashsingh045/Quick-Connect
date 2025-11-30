@@ -10,7 +10,15 @@ const ScheduledMeetingsModal = ({ visible, onClose, meetings }) => {
       </View>
       <View style={styles.meetingDetails}>
         <Text style={styles.meetingTitle}>{item.title}</Text>
-        <Text style={styles.meetingTime}>{item.time}</Text>
+        <Text style={styles.meetingTime}>
+          {new Date(item.meetingFrom).toLocaleDateString(undefined, {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+          })}
+        </Text>
       </View>
       <TouchableOpacity style={styles.joinButton}>
         <Text style={styles.joinButtonText}>Join</Text>

@@ -17,11 +17,27 @@ const MeetingScheduleCard = ({ nextMeeting, onViewAll, onScheduleNew }) => {
           <View style={styles.scheduleIconContainer}>
             <Ionicons name="calendar-outline" size={20} color="#0f172a" />
           </View>
-          <Text style={styles.scheduleText}>
-            {nextMeeting ? nextMeeting.time : 'No upcoming meetings'}
-          </Text>
+
+          <View>
+            {nextMeeting ? (
+              <>
+                <Text style={styles.scheduleText}>{nextMeeting.title}</Text>
+                <Text style={styles.upcomingText}>
+                  {new Date(nextMeeting.meetingFrom).toLocaleDateString(undefined, {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                  })}
+                </Text>
+              </>
+            ) : (
+              <Text style={styles.scheduleText}>No upcoming meetings</Text>
+            )}
+          </View>
         </View>
-        
+
         <TouchableOpacity
           style={styles.scheduleBtn}
           onPress={onScheduleNew}
@@ -30,8 +46,6 @@ const MeetingScheduleCard = ({ nextMeeting, onViewAll, onScheduleNew }) => {
           <Text style={styles.scheduleBtnText}>Schedule New</Text>
         </TouchableOpacity>
       </View>
-
-      {nextMeeting && <Text style={styles.upcomingText}>Upcoming: {nextMeeting.title}</Text>}
     </View>
   );
 };

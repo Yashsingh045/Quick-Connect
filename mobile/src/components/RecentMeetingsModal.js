@@ -9,8 +9,16 @@ const RecentMeetingsModal = ({ visible, onClose, meetings }) => {
                 <Ionicons name="time-outline" size={20} color="#64748b" />
             </View>
             <View style={styles.meetingDetails}>
-                <Text style={styles.meetingTitle}>{item.roomName || `Meeting ${item.id}`}</Text>
-                <Text style={styles.meetingTime}>{new Date(item.date).toLocaleString()}</Text>
+                <Text style={styles.meetingTitle}>{item.title || `Meeting ${item.meetingId}`}</Text>
+                <Text style={styles.meetingTime}>
+                    {new Date(item.meetingFrom).toLocaleDateString(undefined, {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                    })}
+                </Text>
                 {item.duration && (
                     <Text style={styles.meetingDuration}>Duration: {item.duration}</Text>
                 )}

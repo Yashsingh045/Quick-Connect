@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const ACCESS_TOKEN_EXPIRY = '15m';
+const ACCESS_TOKEN_EXPIRY = '24h';
 const REFRESH_TOKEN_EXPIRY = '7d';
 
 export const generateTokens = (userId) => {
@@ -14,7 +14,7 @@ export const generateTokens = (userId) => {
     // If userId is an object, extract the actual ID
     actualUserId = userId.userId || userId.id;
   }
-  
+
   // Ensure we have a valid userId
   if (!actualUserId) {
     throw new Error('userId is required and must be a valid identifier');

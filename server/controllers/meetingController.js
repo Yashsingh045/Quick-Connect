@@ -1,12 +1,9 @@
-import dotenv from "dotenv"
-import prisma from "../config/config.js"
+import dotenv from "dotenv";
+import prisma from "../config/config.js";
 
 
-
-
-export const createMeeting = async(req,res) => {
+export const createMeeting = async (req, res) => {
     try {
-    
         const { title, meetingFrom, meetingTo, participantIds } = req.body;
 
         if (!title || !meetingFrom || !meetingTo || !participantIds || !Array.isArray(participantIds)) {
@@ -16,13 +13,35 @@ export const createMeeting = async(req,res) => {
             });
         }
 
+
+        const hostId = req.user.id;
+        const roomID = Math.floor(10000000 + Math.random() * 90000000).toString();
+
+        // Ensure host is in participant list
+        const allParticipantIds = [...new Set([...participantIds, hostId])];
+
+        const validParticipants = await prisma.users.findMany({
+            where: {
+                id: { in: allParticipantIds.map(id => parseInt(id)) }
+            }
+        });
+
+        if (validParticipants.length !== allParticipantIds.length) {
+            return res.status(400).json({
+                success: false,
+                message: "One or more participant IDs are invalid"
+            });
+        }
+
         const newMeeting = await prisma.meetings.create({
             data: {
                 title,
                 meetingFrom: new Date(meetingFrom),
                 meetingTo: new Date(meetingTo),
+                roomID,
+                hostId,
                 participants: {
-                    connect: participantIds.map(id => ({ id: parseInt(id) }))
+                    connect: allParticipantIds.map(id => ({ id: parseInt(id) }))
                 }
             },
             include: {
@@ -44,11 +63,10 @@ export const createMeeting = async(req,res) => {
             error: error.message
         });
     }
-}
+};
 
 
-
-export const updateMeeting = async(req,res) => {
+export const updateMeeting = async (req, res) => {
     try {
         const { meetingId } = req.params;
         const { title, meetingFrom, meetingTo, participantIds } = req.body;
@@ -65,6 +83,20 @@ export const updateMeeting = async(req,res) => {
         if (meetingFrom) updateData.meetingFrom = new Date(meetingFrom);
         if (meetingTo) updateData.meetingTo = new Date(meetingTo);
         if (participantIds && Array.isArray(participantIds)) {
+
+            const validParticipants = await prisma.users.findMany({
+                where: {
+                    id: { in: participantIds.map(id => parseInt(id)) }
+                }
+            });
+
+            if (validParticipants.length !== participantIds.length) {
+                return res.status(400).json({
+                    success: false,
+                    message: "One or more participant IDs are invalid"
+                });
+            }
+
             updateData.participants = {
                 set: participantIds.map(id => ({ id: parseInt(id) }))
             };
@@ -94,11 +126,10 @@ export const updateMeeting = async(req,res) => {
             error: error.message
         });
     }
-}
+};
 
 
-
-export const readMeeting = async(req,res) => {
+export const readMeeting = async (req, res) => {
     try {
         const { meetingId } = req.params;
 
@@ -127,6 +158,9 @@ export const readMeeting = async(req,res) => {
             const meetings = await prisma.meetings.findMany({
                 include: {
                     participants: true
+                },
+                orderBy: {
+                    createdAt: 'desc'
                 }
             });
 
@@ -144,11 +178,10 @@ export const readMeeting = async(req,res) => {
             error: error.message
         });
     }
-}
+};
 
 
-
-export const deleteMeeting = async(req,res) => {
+export const deleteMeeting = async (req, res) => {
     try {
         const { meetingId } = req.params;
 
@@ -179,16 +212,58 @@ export const deleteMeeting = async(req,res) => {
             error: error.message
         });
     }
-}
+};
 
 
-
-export const readAllMeetings = async(req,res) => {
+export const getRecentMeetings = async (req, res) => {
     try {
-        const meetings = await prisma.meetings.findMany({
-            include: {
-                participants: true
+        const userId = req.user?.id;
+        const { type } = req.query; // 'past' or 'upcoming'
+
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: "User not authenticated"
+            });
+        }
+
+        const now = new Date();
+        let whereCondition = {
+            participants: {
+                some: {
+                    id: userId
+                }
             }
+        };
+
+        let orderBy = { createdAt: 'desc' };
+
+        if (type === 'upcoming') {
+            whereCondition.meetingFrom = {
+                gt: now
+            };
+            orderBy = { meetingFrom: 'asc' };
+        } else {
+            // Default to past/recent meetings
+            whereCondition.meetingFrom = {
+                lte: now
+            };
+            orderBy = { meetingFrom: 'desc' };
+        }
+
+        const meetings = await prisma.meetings.findMany({
+            where: whereCondition,
+            include: {
+                participants: {
+                    select: {
+                        id: true,
+                        userName: true,
+                        email: true
+                    }
+                }
+            },
+            orderBy: orderBy,
+            take: 10
         });
 
         return res.status(200).json({
@@ -196,11 +271,11 @@ export const readAllMeetings = async(req,res) => {
             data: meetings
         });
     } catch (error) {
-        console.error("Error reading meetings:", error);
+        console.error("Error fetching meetings:", error);
         return res.status(500).json({
             success: false,
-            message: "Failed to read meetings",
+            message: "Failed to fetch meetings",
             error: error.message
         });
     }
-}
+};

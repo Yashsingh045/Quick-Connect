@@ -33,6 +33,8 @@ model users {
 model meetings {
   meetingId    Int      @id @default(autoincrement())
   title        String
+  roomID       String   @unique
+  hostId       Int
   createdAt    DateTime @default(now())
   meetingFrom  DateTime
   meetingTo    DateTime

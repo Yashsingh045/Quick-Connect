@@ -29,12 +29,12 @@ export const requestOTP = async (req, res) => {
 
     // This will generate, store, and send the OTP in one go
     const { success, error } = await createAndSendOTP(email);
-    
+
     if (!success) {
       console.error('Failed to send OTP:', error);
-      return res.status(500).json({ 
-        success: false, 
-        message: error || 'Failed to send OTP. Please try again.' 
+      return res.status(500).json({
+        success: false,
+        message: error || 'Failed to send OTP. Please try again.'
       });
     }
 
@@ -57,11 +57,11 @@ export const verifyOTP = async (req, res) => {
   try {
     const { email, otp } = req.body;
     const { success, error } = await verifyOTPService(email, otp);
-    
+
     if (!success) {
-      return res.status(400).json({ 
-        success: false, 
-        message: error || 'Invalid or expired OTP' 
+      return res.status(400).json({
+        success: false,
+        message: error || 'Invalid or expired OTP'
       });
     }
 
@@ -196,7 +196,7 @@ export const loginUser = async (req, res) => {
     });
 
     console.log('User found:', user ? 'Yes' : 'No');
-  
+
 
 
     if (!user) {
@@ -208,7 +208,7 @@ export const loginUser = async (req, res) => {
 
 
     const validPassword = await bcrypt.compare(password, user.password);
-    
+
     if (!validPassword) {
       return res.status(401).json({
         success: false,
@@ -244,7 +244,7 @@ export const loginUser = async (req, res) => {
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       message: 'An error occurred during login',
       ...(process.env.NODE_ENV === 'development' && { error: error.message })
@@ -256,7 +256,7 @@ export const loginUser = async (req, res) => {
 export const verifyEmail = async (req, res) => {
   try {
     const { token } = req.params;
-    
+
     const user = await prisma.users.findFirst({
       where: {
         emailVerifyToken: token,
@@ -300,7 +300,7 @@ export const verifyEmail = async (req, res) => {
 export const requestPasswordReset = async (req, res) => {
   try {
     const { email } = req.body;
-    
+
     const user = await prisma.users.findUnique({
       where: { email }
     });
@@ -314,7 +314,7 @@ export const requestPasswordReset = async (req, res) => {
     }
 
     const { token, expiresAt } = generatePasswordResetToken();
-    
+
     await prisma.users.update({
       where: { id: user.id },
       data: {
@@ -354,7 +354,7 @@ export const refreshToken = async (req, res) => {
 
     // Verify the refresh token
     const decoded = verifyToken(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-    
+
     if (!decoded) {
       return res.status(401).json({
         success: false,
@@ -447,7 +447,7 @@ export const resetPassword = async (req, res) => {
         refreshToken: null // Invalidate all refresh tokens
       }
     });
-   res.status(200).json({
+    res.status(200).json({
       success: true,
       message: 'Password reset successful'
     });
@@ -465,14 +465,20 @@ export const resetPassword = async (req, res) => {
 
 // In userController.js
 export const getCurrentUser = async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id).select('-password');
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
-        }
-        res.status(200).json({ success: true, data: user });
-    } catch (error) {
-        console.error('Error fetching user:', error);
-        res.status(500).json({ success: false, message: 'Server error' });
+  try {
+    const user = await prisma.users.findUnique({
+      where: { id: req.user.id }
+    });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
+
+    // Remove password from response
+    const { password, ...userWithoutPassword } = user;
+    res.status(200).json({ success: true, data: userWithoutPassword });
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
 };

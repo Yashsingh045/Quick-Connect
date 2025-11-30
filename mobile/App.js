@@ -8,6 +8,42 @@ import { AuthProvider, useAuth } from './src/contexts/AuthContext';
 import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+
+import { LogBox } from 'react-native';
+
+
+LogBox.ignoreLogs([
+  'You are not join in any room, no need to leave room.',
+  'Remove callback for: [ GalleryLayout',
+  '[ZegoUIKit]',
+]);
+LogBox.ignoreAllLogs(true);
+
+
+// LogBox.ignoreLogs([
+//   'You are not join in any room, no need to leave room.',
+//   'Remove callback for: [ GalleryLayout',
+//   '[ZegoUIKit]',
+// ]);
+
+const originalConsoleInfo = console.info;
+console.info = (...args) => {
+  const msg = args[0];
+  if (
+    typeof msg === 'string' &&
+    (msg.includes('[ZegoUIKit]') ||
+      msg.includes('You are not join in any room, no need to leave room.') ||
+      msg.includes('Remove callback for: [ GalleryLayout'))
+  ) {
+    return; // swallow Zego info logs
+  }
+  originalConsoleInfo(...args);
+};
+
+
+
+
+
 // Import screens
 import PublicLanding from './src/screens/PublicLanding';
 import PrivateLanding from './src/screens/PrivateLanding';

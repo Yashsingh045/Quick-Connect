@@ -49,7 +49,9 @@ export const getZegoTokenForRoom = async (req, res) => {
         const appSign = process.env.ZEGO_APP_SIGN;
         const serverSecret = process.env.ZEGO_SERVER_SECRET;
         const { roomID } = req.params;
-        const userId = req.user?.id || `user_${Math.random().toString(36).substr(2, 9)}`;
+        // Generate a unique user ID to allow multiple logins from same account
+        const dbUserId = req.user?.id;
+        const userId = dbUserId ? `${dbUserId}_${Math.floor(Math.random() * 10000)}` : `user_${Math.floor(Math.random() * 10000)}`;
         const userName = req.user?.name || `User_${Math.random().toString(36).substr(2, 4)}`;
 
         if (!appID || !serverSecret) {
