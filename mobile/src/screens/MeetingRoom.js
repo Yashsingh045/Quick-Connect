@@ -10,7 +10,7 @@ import {
   Share,
   TouchableOpacity,
 } from 'react-native';
-import ZegoUIKitPrebuiltVideoConference from '@zegocloud/zego-uikit-prebuilt-video-conference-rn';
+import ZegoUIKitPrebuiltVideoConference, { ZegoMenuBarButtonName } from '@zegocloud/zego-uikit-prebuilt-video-conference-rn';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../contexts/AuthContext';
@@ -67,15 +67,14 @@ const MeetingRoom = () => {
       },
       bottomMenuBarConfig: {
         buttons: [
-          'toggleCamera',
-          'toggleMicrophone',
-          'switchCamera',
-          'switchAudioOutput',
-          'chat',
-          'memberList',
-          'leave',
+          ZegoMenuBarButtonName.toggleCameraButton,
+          ZegoMenuBarButtonName.toggleMicrophoneButton,
+          ZegoMenuBarButtonName.switchCameraButton,
+          ZegoMenuBarButtonName.switchAudioOutputButton,
+          ZegoMenuBarButtonName.showMemberListButton,
+          ZegoMenuBarButtonName.hangUpButton,
         ],
-        maxCount: 7,
+        maxCount: 6,
       },
       topMenuBarConfig: {
         buttons: [],
@@ -223,6 +222,9 @@ const MeetingRoom = () => {
         </View>
 
         <View style={styles.headerRight}>
+          <TouchableOpacity onPress={() => Alert.alert('Screen Share', 'Feature coming soon')} style={styles.shareButton}>
+            <Text style={styles.shareButtonText}>Share Screen</Text>
+          </TouchableOpacity>
           <TouchableOpacity onPress={onShare} style={styles.shareButton}>
             <Text style={styles.shareButtonText}>Share</Text>
           </TouchableOpacity>
