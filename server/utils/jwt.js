@@ -35,6 +35,7 @@ export const generateTokens = (userId) => {
   return { accessToken, refreshToken };
 };
 
+
 export const verifyToken = (token) => {
   try {
     return jwt.verify(token, JWT_SECRET);

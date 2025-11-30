@@ -12,3 +12,4 @@ router.get('/config', authenticate, getZegoConfig);
 router.get('/token/:roomID', authenticate, getZegoTokenForRoom);
 
 export default router;
+

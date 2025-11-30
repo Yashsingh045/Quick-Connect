@@ -11,6 +11,7 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
 
+  
   useEffect(() => {
   const loadUser = async () => {
     try {

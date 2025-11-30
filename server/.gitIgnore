@@ -1,25 +1,30 @@
-
-*.env
-
+# Node modules
 node_modules/
 
-/src/generated/prisma
+# Environment files
+.env
 
+# Expo
+.expo/
+
+# macOS system files
+.DS_Store
+
+# Prisma generated files
+/src/generated/prisma
 /generated/prisma
 prisma/migrations
 
-
-.expo/
-
-.DS_Store
-node_modules
-.env
+# Build / output folders
 /dist
 /build
+
+# Logs
 /logs
 npm-debug.log*
+
+# VSCode settings
 .vscode/
 
-
+# Package lock files (optional to ignore, depends on your workflow)
 package-lock.*
-

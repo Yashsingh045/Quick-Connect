@@ -13,7 +13,6 @@ import { createAndSendOTP, verifyOTPService } from '../services/otpServices.js';
 
 const router = express.Router();
 
-
 router.post('/login', loginUser);
 router.post('/refresh-token', refreshTokenMiddleware, refreshToken);
 
