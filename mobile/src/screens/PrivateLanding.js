@@ -14,14 +14,19 @@ import {
 } from 'react-native';
 import { Ionicons, MaterialIcons, Feather, FontAwesome } from '@expo/vector-icons';
 
+import { useNavigation } from '@react-navigation/native';
+
 const { width } = Dimensions.get('window');
 
-export default function PrivateLanding({ auth, onLogout, onViewMeetings, onNavigate }) {
+export default function PrivateLanding({ auth, onLogout, onViewMeetings }) {
+  const navigation = useNavigation();
   const [meetingId, setMeetingId] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleHostMeeting = () => {
-    Alert.alert('Host Meeting', 'Meeting hosting feature coming soon!');
+    // Generate a random meeting ID for hosting
+    const newMeetingId = Math.floor(Math.random() * 100000000).toString();
+    navigation.navigate('MeetingRoom', { roomName: newMeetingId });
   };
 
   const handleJoinMeeting = () => {
@@ -29,7 +34,7 @@ export default function PrivateLanding({ auth, onLogout, onViewMeetings, onNavig
       Alert.alert('Error', 'Please enter a meeting ID');
       return;
     }
-    Alert.alert('Join Meeting', `Joining meeting: ${meetingId}`);
+    navigation.navigate('MeetingRoom', { roomName: meetingId });
   };
 
   const handleScheduleMeeting = () => {
@@ -70,7 +75,7 @@ export default function PrivateLanding({ auth, onLogout, onViewMeetings, onNavig
     return (
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <StatusBar style="dark" />
-        
+
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
@@ -94,15 +99,15 @@ export default function PrivateLanding({ auth, onLogout, onViewMeetings, onNavig
         {/* Start a New Meeting Card */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Start a New Meeting</Text>
-          <TouchableOpacity 
-            style={styles.hostBtn} 
+          <TouchableOpacity
+            style={styles.hostBtn}
             onPress={handleHostMeeting}
             activeOpacity={0.9}
           >
             <Ionicons name="videocam" size={24} color="white" style={styles.hostBtnIcon} />
             <Text style={styles.hostBtnText}>Host a Meeting</Text>
           </TouchableOpacity>
-          
+
           <Text style={styles.joinLabel}>Or, enter a meeting ID to join</Text>
           <View style={styles.joinSection}>
             <TextInput
@@ -112,8 +117,8 @@ export default function PrivateLanding({ auth, onLogout, onViewMeetings, onNavig
               onChangeText={setMeetingId}
               placeholderTextColor="#94a3b8"
             />
-            <TouchableOpacity 
-              style={styles.joinBtn} 
+            <TouchableOpacity
+              style={styles.joinBtn}
               onPress={handleJoinMeeting}
               activeOpacity={0.9}
             >
@@ -130,7 +135,7 @@ export default function PrivateLanding({ auth, onLogout, onViewMeetings, onNavig
               <Text style={styles.viewAllText}>View All</Text>
             </TouchableOpacity>
           </View>
-          
+
           <View style={styles.scheduleContent}>
             <View style={styles.scheduleInfo}>
               <View style={styles.scheduleIconContainer}>
@@ -138,15 +143,15 @@ export default function PrivateLanding({ auth, onLogout, onViewMeetings, onNavig
               </View>
               <Text style={styles.scheduleText}>Today, 10:00 AM</Text>
             </View>
-            <TouchableOpacity 
-              style={styles.scheduleBtn} 
+            <TouchableOpacity
+              style={styles.scheduleBtn}
               onPress={handleScheduleMeeting}
               activeOpacity={0.9}
             >
               <Text style={styles.scheduleBtnText}>Schedule New</Text>
             </TouchableOpacity>
           </View>
-          
+
           <Text style={styles.upcomingText}>Upcoming</Text>
         </View>
 
@@ -158,7 +163,7 @@ export default function PrivateLanding({ auth, onLogout, onViewMeetings, onNavig
               <Text style={styles.viewMoreText}>View More</Text>
             </TouchableOpacity>
           </View>
-          
+
           <View style={styles.meetingItem}>
             <View style={styles.meetingIconContainer}>
               <Ionicons name="time-outline" size={18} color="#0f172a" />
@@ -168,7 +173,7 @@ export default function PrivateLanding({ auth, onLogout, onViewMeetings, onNavig
               <Text style={styles.meetingTime}>Today, 2:00 PM</Text>
             </View>
           </View>
-          
+
           <View style={[styles.meetingItem, { borderBottomWidth: 0 }]}>
             <View style={styles.meetingIconContainer}>
               <Ionicons name="time-outline" size={18} color="#0f172a" />
@@ -184,8 +189,8 @@ export default function PrivateLanding({ auth, onLogout, onViewMeetings, onNavig
         <View style={[styles.card, { marginTop: 16, marginBottom: 24 }]}>
           <Text style={styles.cardTitle}>Quick Actions</Text>
           <View style={styles.quickActions}>
-            <TouchableOpacity 
-              style={styles.actionItem} 
+            <TouchableOpacity
+              style={styles.actionItem}
               onPress={handleInviteParticipants}
               activeOpacity={0.9}
             >
@@ -194,9 +199,9 @@ export default function PrivateLanding({ auth, onLogout, onViewMeetings, onNavig
               </View>
               <Text style={styles.actionText}>Invite</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.actionItem} 
+
+            <TouchableOpacity
+              style={styles.actionItem}
               onPress={handleStartBroadcast}
               activeOpacity={0.9}
             >
@@ -230,13 +235,13 @@ export default function PrivateLanding({ auth, onLogout, onViewMeetings, onNavig
               onPress={() => setActiveTab(tab.id)}
               activeOpacity={0.7}
             >
-              <Ionicons 
-                name={tab.icon} 
-                size={24} 
-                color={isActive ? '#1677ff' : '#94a3b8'} 
+              <Ionicons
+                name={tab.icon}
+                size={24}
+                color={isActive ? '#1677ff' : '#94a3b8'}
               />
               <Text style={[
-                styles.navLabel, 
+                styles.navLabel,
                 isActive && styles.navLabelActive
               ]}>
                 {tab.label}

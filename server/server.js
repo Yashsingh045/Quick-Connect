@@ -10,6 +10,8 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+
 // Enable CORS for all routes
 app.use(cors({
   origin: '*', // Allow all origins in development
@@ -20,16 +22,16 @@ app.use(cors({
 
 // Health check endpoint
 app.get('/', (req, res) => {
-  res.json({ 
-    message: 'Quick Connect App is running!', 
+  res.json({
+    message: 'Quick Connect App is running!',
     version: '1.0.0',
     environment: process.env.NODE_ENV || 'development'
   });
 });
 
 // API Routes
-import routes from './routes/index.js';
-app.use('/api', routes);
+import router from './routes/index.js';
+app.use('/api', router);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

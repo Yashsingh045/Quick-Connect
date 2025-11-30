@@ -104,17 +104,27 @@ const handleApiError = (error) => {
 };
 
 // Request interceptor to add auth token
-// In mobile/src/services/api.js
-
-// Add this right after the axios instance creation
 api.interceptors.request.use(
-  config => {
-    console.log('API Request:', {
-      url: config.url,
-      method: config.method,
-      data: config.data,
-      baseURL: config.baseURL
-    });
+  async (config) => {
+    // Get access token from AsyncStorage
+    try {
+      const token = await AsyncStorage.getItem('accessToken');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (error) {
+      console.error('Error getting token from storage:', error);
+    }
+
+    if (__DEV__) {
+      console.log('API Request:', {
+        url: config.url,
+        method: config.method,
+        data: config.data,
+        baseURL: config.baseURL,
+        hasAuth: !!config.headers.Authorization
+      });
+    }
     return config;
   },
   error => {
@@ -125,31 +135,46 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   response => {
-    console.log('API Response:', {
-      status: response.status,
-      data: response.data,
-      config: {
-        url: response.config.url,
-        method: response.config.method
-      }
-    });
+    if (__DEV__) {
+      console.log('API Response:', {
+        status: response.status,
+        data: response.data,
+        config: {
+          url: response.config.url,
+          method: response.config.method
+        }
+      });
+    }
     return response;
   },
-  error => {
-    console.error('API Error:', {
-      message: error.message,
-      response: error.response ? {
-        status: error.response.status,
-        data: error.response.data,
-        headers: error.response.headers
-      } : 'No response',
-      request: error.request ? 'Request was made but no response received' : 'No request was made',
-      config: {
-        url: error.config?.url,
-        method: error.config?.method,
-        baseURL: error.config?.baseURL
+  async (error) => {
+    // Handle 401 errors - token expired or invalid
+    if (error.response?.status === 401) {
+      // Clear tokens and potentially redirect to login
+      try {
+        await AsyncStorage.removeItem('accessToken');
+        await AsyncStorage.removeItem('refreshToken');
+      } catch (storageError) {
+        console.error('Error clearing tokens:', storageError);
       }
-    });
+    }
+
+    if (__DEV__) {
+      console.error('API Error:', {
+        message: error.message,
+        response: error.response ? {
+          status: error.response.status,
+          data: error.response.data,
+          headers: error.response.headers
+        } : 'No response',
+        request: error.request ? 'Request was made but no response received' : 'No request was made',
+        config: {
+          url: error.config?.url,
+          method: error.config?.method,
+          baseURL: error.config?.baseURL
+        }
+      });
+    }
     return Promise.reject(error);
   }
 );

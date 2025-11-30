@@ -1,13 +1,15 @@
 import { Router } from "express";
-import userRoutes from "./userRoutes.js";
-import meetingRoutes from "./meetingRoutes.js";
-import authRoutes from "./authRoutes.js";
+import authRoutes from './authRoutes.js';
+import userRoutes from './userRoutes.js';
+import meetingRoutes from './meetingRoutes.js';
+import zegoRoutes from './zegoRoutes.js';
 
-const routes = Router();
+const router = Router();
 
 // Mount routes
-routes.use("/auth", authRoutes);  // This will be /api/auth
-routes.use("/user", userRoutes);  // This will be /api/user
-routes.use("/meeting", meetingRoutes);  // This will be /api/meeting
+router.use('/auth', authRoutes); // This will be /api/auth
+router.use('/users', userRoutes); // This will be /api/users
+router.use('/meetings', meetingRoutes); // This will be /api/meetings
+router.use('/zego', zegoRoutes); // This will be /api/zego
 
-export default routes;
+export default router;

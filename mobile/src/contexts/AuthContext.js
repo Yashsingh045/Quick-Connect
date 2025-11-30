@@ -1,5 +1,5 @@
 // mobile/src/contexts/AuthContext.js
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -9,6 +9,31 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+
+  useEffect(() => {
+  const loadUser = async () => {
+    try {
+      setIsLoading(true);
+      const token = await AsyncStorage.getItem('accessToken');
+      if (token) {
+        // Optionally validate the token with your backend
+        const userData = await api.get('/auth/me');
+        setUser(userData.data);
+      }
+    } catch (error) {
+      console.error('Failed to load user', error);
+      await AsyncStorage.removeItem('accessToken');
+      await AsyncStorage.removeItem('refreshToken');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  loadUser();
+}, []);
+
+
 
   const register = async (name, email, password, otp) => {
     setIsLoading(true);
@@ -43,11 +68,13 @@ export const AuthProvider = ({ children }) => {
       setIsLoading(false);
     }
   };
-const login = async (email, password) => {
+
+  
+  const login = async (email, password) => {
   setIsLoading(true);
   setError(null);
   try {
-    console.log('Login attempt with:', { email, passwordLength: password.length });
+    console.log('Login attempt with:', { email, passwordLength: password?.length || 0 });
     
     const response = await api.post('/auth/login', {
       email: email.trim().toLowerCase(),
@@ -64,24 +91,28 @@ const login = async (email, password) => {
           await AsyncStorage.setItem('refreshToken', tokens.refreshToken);
         }
         setUser(user);
+        return { success: true, data: response.data.data };
       }
-      return { success: true, data: response.data.data };
     }
-    throw new Error(response.data.message || 'Login failed');
+    // This will be shown for both invalid email and password
+    return { success: false, error: 'Invalid email or password' };
   } catch (error) {
     console.error('Login error details:', {
       message: error.message,
       response: error.response?.data,
       status: error.response?.status
     });
-    const message = error.response?.data?.message || error.message || 'Login failed. Please check your credentials.';
-    setError(message);
-    return { success: false, error: message };
+    // This will be shown for any other errors (like network issues)
+    return { 
+      success: false, 
+      error: error.response?.data?.message || 'Invalid email or password' 
+    };
   } finally {
     setIsLoading(false);
   }
 };
-
+  
+  
 
   const logout = async () => {
     try {

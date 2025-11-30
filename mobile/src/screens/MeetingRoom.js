@@ -1,460 +1,320 @@
-import React, { useState, useEffect } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  Alert,
-  Dimensions,
-} from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { StyleSheet, View, Text, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import ZegoUIKitPrebuiltVideoConference from '@zegocloud/zego-uikit-prebuilt-video-conference-rn';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
+import { useAuth } from '../contexts/AuthContext';
+import api from '../services/api';
 
-const { width, height } = Dimensions.get('window');
+const MeetingRoom = () => {
+  const navigation = useNavigation();
+  const route = useRoute();
+  const { roomName = 'default-room' } = route.params || {};
+  const { user } = useAuth();
+  const componentMounted = useRef(true);
 
-export default function MeetingRoom({ meeting, auth, onBack, onEndMeeting }) {
-  const [isMuted, setIsMuted] = useState(false);
-  const [isVideoOff, setIsVideoOff] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const [isSharing, setIsSharing] = useState(false);
-  const [participants, setParticipants] = useState([
-    {
-      id: 1,
-      name: 'Alex Johnson',
-      isYou: true,
-      avatar: '🎤',
-      isMuted: false,
-      isVideoOn: true,
-    },
-    {
-      id: 2,
-      name: 'Sarah',
-      avatar: '☂️',
-      isMuted: false,
-      isVideoOn: true,
-    },
-    {
-      id: 3,
-      name: 'Maria',
-      avatar: '👤',
-      isMuted: true,
-      isVideoOn: true,
-    },
-  ]);
+  const [zegoConfig, setZegoConfig] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const [additionalParticipants, setAdditionalParticipants] = useState(5);
+  // Fetch config only once when component mounts
+  useEffect(() => {
+    let isMounted = true;
 
-  const handleMute = () => {
-    setIsMuted(!isMuted);
+    const fetchConfig = async () => {
+      try {
+        if (!isMounted) return;
+        
+        setLoading(true);
+        setError(null);
 
-    // update local participant
-    setParticipants(prev => 
-      prev.map(p => p.isYou ? { ...p, isMuted: !isMuted } : p)
-    );
-  };
+        // Check if user is authenticated
+        if (!user) {
+          throw new Error('You must be logged in to join a meeting');
+        }
 
-  const handleVideoToggle = () => {
-    setIsVideoOff(!isVideoOff);
+        // Fetch Zego config with token from server
+        // Optionally use room-specific token endpoint for better security
+        const endpoint = roomName && roomName !== 'default-room'
+          ? `/zego/token/${roomName}`
+          : '/zego/config';
 
-    // update local participant
-    setParticipants(prev => 
-      prev.map(p => p.isYou ? { ...p, isVideoOn: !isVideoOff } : p)
-    );
-  };
+        const response = await api.get(endpoint);
 
-  const handleRecord = () => {
-    setIsRecording(!isRecording);
-    Alert.alert(
-      'Recording', 
-      isRecording ? 'Recording stopped' : 'Recording started'
-    );
-  };
+        if (!isMounted) return;
 
-  const handleShare = () => {
-    setIsSharing(!isSharing);
-    Alert.alert('Share Screen', isSharing ? 'Screen sharing stopped' : 'Screen sharing started');
-  };
+        if (response.data && response.data.success && response.data.data) {
+          const { appID, token } = response.data.data;
 
-  const handleEndMeeting = () => {
-    Alert.alert(
-      'End Meeting',
-      'Are you sure you want to end the meeting for everyone?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'End Meeting', style: 'destructive', onPress: onEndMeeting }
-      ]
-    );
-  };
+          if (!appID || !token) {
+            throw new Error('Invalid config response from server');
+          }
 
-  const handleChat = () => {
-    Alert.alert('Chat', 'Chat feature coming soon!');
-  };
+          setZegoConfig({
+            appID: appID,
+            token: token,
+          });
+        } else {
+          throw new Error('Invalid response format from server');
+        }
+      } catch (error) {
+        if (!isMounted) return;
+        
+        console.error('Failed to fetch Zego config:', error);
 
-  const renderParticipantThumbnail = (participant, index) => {
-    if (index === participants.length) {
+        let errorMessage = error.response?.data?.message ||
+          error.message ||
+          'Could not load video conference configuration.';
 
-      return (
-        <View key="more" style={styles.participantTile}>
-          <View style={styles.moreParticipants}>
-            <Text style={styles.moreText}>+{additionalParticipants} more</Text>
-          </View>
-          <Text style={styles.participantLabel}>More</Text>
-        </View>
-      );
-    }
+        // Provide more specific error messages
+        if (error.response?.status === 401) {
+          errorMessage = 'Authentication required. Please log in and try again.';
+        } else if (error.response?.status === 500) {
+          errorMessage = 'Server error. Please try again later.';
+        } else if (!error.response) {
+          errorMessage = 'Network error. Please check your internet connection.';
+        }
 
+        setError(errorMessage);
+
+        // Show user-friendly error alert
+        Alert.alert(
+          'Connection Error',
+          errorMessage + '\n\nPlease make sure you are logged in and try again.',
+          [
+            {
+              text: 'Go Back',
+              onPress: () => {
+                componentMounted.current = false;
+                navigation.goBack();
+              },
+              style: 'cancel'
+            },
+            {
+              text: 'Retry',
+              onPress: () => {
+                setError(null);
+                fetchConfig();
+              }
+            }
+          ]
+        );
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchConfig();
+
+    return () => {
+      isMounted = false;
+      componentMounted.current = false;
+    };
+  }, [user?.id, roomName]); // Removed navigation from dependencies
+
+  if (loading) {
     return (
-      <View key={participant.id} style={styles.participantTile}>
-        <View style={[
-          styles.participantVideo,
-          participant.avatar === '☂️' && styles.greenBackground,
-          participant.avatar === '👤' && styles.darkGreenBackground,
-          participant.avatar === '🎤' && styles.greyBackground,
-        ]}>
-          {participant.isVideoOn ? (
-            <Text style={styles.participantAvatar}>{participant.avatar}</Text>
-          ) : (
-            <View style={styles.videoOffPlaceholder}>
-              <Text style={styles.videoOffIcon}>📹</Text>
-            </View>
-          )}
-          {participant.isMuted && (
-            <View style={styles.muteIndicator}>
-              <Text style={styles.muteIcon}>🔇</Text>
-            </View>
-          )}
-        </View>
-        <Text style={styles.participantLabel}>{participant.name}</Text>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#1677ff" />
+        <Text style={styles.loadingText}>Preparing meeting room...</Text>
+        <Text style={styles.loadingSubtext}>Please wait</Text>
       </View>
     );
-  };
+  }
+
+  if (error && !zegoConfig) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorTitle}>Unable to Join Meeting</Text>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => {
+              setError(null);
+              setLoading(true);
+              // Retry fetching config
+              const fetchConfig = async () => {
+                try {
+                  const response = await api.get('/zego/config');
+                  if (response.data && response.data.success && response.data.data) {
+                    setZegoConfig({
+                      appID: response.data.data.appID,
+                      token: response.data.data.token,
+                    });
+                  }
+                } catch (err) {
+                  setError(err.response?.data?.message || err.message);
+                } finally {
+                  setLoading(false);
+                }
+              };
+              fetchConfig();
+            }}
+          >
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.backButtonText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!zegoConfig) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>Failed to load configuration.</Text>
+      </View>
+    );
+  }
+
+  // Use authenticated user ID or generate a unique one
+  const userID = user?.id ? String(user.id) : String(Math.floor(Math.random() * 100000));
+  const userName = user?.name || user?.userName || user?.username || `User_${userID}`;
+
+  // Ensure roomName is valid - must be a non-empty string
+  const validRoomName = roomName && roomName !== 'default-room' && String(roomName).trim()
+    ? String(roomName).trim()
+    : `room-${Date.now()}`;
+
+  // Don't render until we have config
+  if (!zegoConfig || !zegoConfig.appID || !zegoConfig.token) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#1677ff" />
+        <Text style={styles.loadingText}>Loading meeting configuration...</Text>
+      </View>
+    );
+  }
+
+  // Memoize callbacks to prevent re-renders
+  const handleLeave = useCallback(() => {
+    console.log('User left the meeting');
+    componentMounted.current = false;
+    navigation.goBack();
+  }, [navigation]);
+
+  const handleError = useCallback((errorCode, errorMessage) => {
+    console.error('Zego SDK Error:', errorCode, errorMessage);
+    Alert.alert(
+      'Meeting Error',
+      `Error code: ${errorCode}\n${errorMessage || 'Unknown error'}`,
+      [{ text: 'OK', onPress: () => {
+        componentMounted.current = false;
+        navigation.goBack();
+      }}]
+    );
+  }, [navigation]);
+
+  const handleRoomStateChanged = useCallback((state) => {
+    console.log('Room state changed:', state);
+  }, []);
+
+  const handleUserCountChanged = useCallback((userList) => {
+    console.log('Users in room:', userList.length, userList.map(u => u.userID));
+  }, []);
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="light" />
-      
-      {/* heading */}
-      
-      <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backIcon}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.meetingTitle}>{meeting?.title || 'Team Sync'}</Text>
-        <TouchableOpacity onPress={handleChat} style={styles.chatButton}>
-          <Text style={styles.chatIcon}>💬</Text>
-        </TouchableOpacity>
-      </View>
-
-
-      {/* main video display */}
-      
-      <View style={styles.mainVideoContainer}>
-        <View style={styles.mainVideo}>
-          
-          {/* simulated video content */}
-          
-          <View style={styles.videoContent}>
-            <Text style={styles.speakerText}>JANGONIA</Text>
-          </View>
-          
-          
-          {/* local participant overlay */}
-          
-          <View style={styles.localParticipantOverlay}>
-            <Text style={styles.localParticipantText}>
-              Alex Johnson (You)
-            </Text>
-          </View>
-        </View>
-      </View>
-
-
-      {/* participant thumbnails */}
-      
-      <View style={styles.participantsContainer}>
-        {participants.slice(0, 3).map((participant, index) => 
-          renderParticipantThumbnail(participant, index)
-        )}
-        {renderParticipantThumbnail(null, 3)}
-      </View>
-
-
-      {/* control bar */}
-      
-      <View style={styles.controlBar}>
-        <TouchableOpacity 
-          style={[styles.controlButton, isMuted && styles.controlButtonActive]}
-          onPress={handleMute}
-        >
-          <Text style={styles.controlIcon}>🎤</Text>
-          <Text style={styles.controlLabel}>Mute</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[styles.controlButton, isVideoOff && styles.controlButtonActive]}
-          onPress={handleVideoToggle}
-        >
-          <Text style={styles.controlIcon}>📹</Text>
-          <Text style={styles.controlLabel}>Stop Video</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[styles.controlButton, styles.recordButton, isRecording && styles.recordingActive]}
-          onPress={handleRecord}
-        >
-          <View style={[styles.recordIcon, isRecording && styles.recordingDot]} />
-          <Text style={styles.controlLabel}>Record</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[styles.controlButton, isSharing && styles.controlButtonActive]}
-          onPress={handleShare}
-        >
-          <Text style={styles.controlIcon}>↗️</Text>
-          <Text style={styles.controlLabel}>Share</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[styles.controlButton, styles.endButton]}
-          onPress={handleEndMeeting}
-        >
-          <Text style={styles.controlIcon}>📞</Text>
-          <Text style={styles.controlLabel}>End</Text>
-        </TouchableOpacity>
-      </View>
-
-
-      {/* bottom navigation */}
-      
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem}>
-          <Text style={styles.navIcon}>📹</Text>
-          <Text style={styles.navLabel}>Meetings</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.navItem}>
-          <Text style={styles.navIcon}>👥</Text>
-          <Text style={styles.navLabel}>Participants</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.navItem}>
-          <Text style={styles.navIcon}>⚙️</Text>
-          <Text style={styles.navLabel}>Settings</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    <SafeAreaView style={styles.container}>
+      <ZegoUIKitPrebuiltVideoConference
+        key={`zego-${zegoConfig.appID}-${validRoomName}-${userID}`}
+        appID={zegoConfig.appID}
+        token={zegoConfig.token}
+        userID={userID}
+        userName={userName}
+        conferenceID={validRoomName}
+        config={{
+          turnOnCameraWhenJoining: true,
+          turnOnMicrophoneWhenJoining: true,
+          useFrontFacingCamera: true,
+          onLeave: handleLeave,
+          onError: handleError,
+          onRoomStateChanged: handleRoomStateChanged,
+          onUserCountOrPropertyChanged: handleUserCountChanged,
+        }}
+      />
+    </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: 54,
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-  },
-  backButton: {
-    padding: 8,
-  },
-  backIcon: {
-    fontSize: 24,
-    color: '#fff',
-  },
-  meetingTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#fff',
-    flex: 1,
-    textAlign: 'center',
-  },
-  chatButton: {
-    padding: 8,
-  },
-  chatIcon: {
-    fontSize: 20,
-  },
-  mainVideoContainer: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-  },
-  mainVideo: {
-    flex: 1,
-    backgroundColor: '#f5f5dc',
-    borderRadius: 12,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  videoContent: {
+  loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5dc',
+    backgroundColor: '#fff',
   },
-  speakerText: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#000',
-    position: 'absolute',
-    bottom: 20,
-    alignSelf: 'center',
-  },
-  localParticipantOverlay: {
-    position: 'absolute',
-    bottom: 12,
-    left: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  localParticipantText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  participantsContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    justifyContent: 'space-between',
-  },
-  participantTile: {
-    alignItems: 'center',
-    flex: 1,
-    marginHorizontal: 4,
-  },
-  participantVideo: {
-    width: 80,
-    height: 60,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-    marginBottom: 8,
-  },
-  greenBackground: {
-    backgroundColor: '#52c41a',
-  },
-  darkGreenBackground: {
-    backgroundColor: '#389e0d',
-  },
-  greyBackground: {
-    backgroundColor: '#8c8c8c',
-  },
-  participantAvatar: {
-    fontSize: 24,
-    color: '#fff',
-  },
-  videoOffPlaceholder: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  videoOffIcon: {
-    fontSize: 20,
-    color: '#fff',
-  },
-  muteIndicator: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-    backgroundColor: 'rgba(255, 0, 0, 0.8)',
-    borderRadius: 10,
-    width: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  muteIcon: {
-    fontSize: 10,
-  },
-  participantLabel: {
-    color: '#fff',
-    fontSize: 12,
-    textAlign: 'center',
-  },
-  moreParticipants: {
-    width: 80,
-    height: 60,
-    backgroundColor: '#595959',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  moreText: {
-    color: '#fff',
-    fontSize: 14,
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#333',
     fontWeight: '600',
   },
-  controlBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+  loadingSubtext: {
+    marginTop: 5,
+    fontSize: 14,
+    color: '#666',
   },
-  controlButton: {
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    minWidth: 60,
+    padding: 20,
+    backgroundColor: '#fff',
   },
-  controlButtonActive: {
-    opacity: 0.7,
-  },
-  controlIcon: {
-    fontSize: 24,
-    marginBottom: 4,
-  },
-  controlLabel: {
-    color: '#fff',
-    fontSize: 12,
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 12,
     textAlign: 'center',
   },
-  recordButton: {
-    // Special styling for record button
+  errorText: {
+    color: '#64748b',
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 24,
   },
-  recordIcon: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+  retryButton: {
     backgroundColor: '#1677ff',
-    marginBottom: 4,
-    alignSelf: 'center',
-  },
-  recordingDot: {
-    backgroundColor: '#ff4d4f',
-  },
-  recordingActive: {
-    // Additional styling when recording
-  },
-  endButton: {
-    // Special styling for end button
-  },
-  bottomNav: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    paddingHorizontal: 32,
     paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 8,
+    marginBottom: 12,
+    minWidth: 120,
   },
-  navItem: {
-    flex: 1,
-    alignItems: 'center',
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
   },
-  navIcon: {
-    fontSize: 20,
-    marginBottom: 4,
-    color: '#8c8c8c',
+  backButton: {
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    minWidth: 120,
   },
-  navLabel: {
-    fontSize: 12,
-    color: '#8c8c8c',
+  backButtonText: {
+    color: '#64748b',
+    fontSize: 16,
+    fontWeight: '500',
+    textAlign: 'center',
   },
 });
+
+export default MeetingRoom;
