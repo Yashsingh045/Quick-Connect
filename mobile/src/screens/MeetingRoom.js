@@ -45,9 +45,8 @@ const MeetingRoom = () => {
   const onShare = async () => {
     try {
       await Share.share({
-        message: `Join my video meeting on Quick Connect!\n\nTitle: ${
-          title || 'Instant Meeting'
-        }\nCode: ${cleanRoomName}\n\nEnter this code in the app to join.`,
+        message: `Join my video meeting on Quick Connect!\n\nTitle: ${title || 'Instant Meeting'
+          }\nCode: ${cleanRoomName}\n\nEnter this code in the app to join.`,
         title: 'Join Quick Connect Meeting',
       });
     } catch (error) {
@@ -151,11 +150,23 @@ const MeetingRoom = () => {
         if (resp.data?.success && resp.data.data) {
           const { appID, token, userID, userName } = resp.data.data;
 
+          // Validate all required fields
+          if (!appID || !token || !userID || !userName) {
+            console.error('Missing Zego config fields:', { appID, token, userID, userName });
+            throw new Error('Incomplete Zego configuration received from server');
+          }
+
+          const parsedAppID = Number(appID);
+          if (isNaN(parsedAppID) || parsedAppID === 0) {
+            console.error('Invalid appID:', appID);
+            throw new Error('Invalid Zego App ID');
+          }
+
           setZegoConfig({
-            appID: Number(appID),
-            token,
-            userID,
-            userName,
+            appID: parsedAppID,
+            token: String(token),
+            userID: String(userID),
+            userName: String(userName),
             conferenceID: cleanRoomName,
           });
         } else {
@@ -201,36 +212,49 @@ const MeetingRoom = () => {
 
   return (
     <View style={styles.container}>
-    {/* Header */}
-    <View style={styles.header}>
-      <View>
-        <Text style={styles.title}>{title || 'Instant Meeting'}</Text>
-        <Text style={styles.subtitle}>Code: {cleanRoomName}</Text>
-        <Text style={styles.subtitle}>You: {currentUserLabel}</Text>
+      {/* Header */}
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.title}>{title || 'Instant Meeting'}</Text>
+          <Text style={styles.subtitle}>Code: {cleanRoomName}</Text>
+          <Text style={styles.subtitle}>You: {currentUserLabel}</Text>
+        </View>
+
+        <View style={styles.headerRight}>
+          <TouchableOpacity onPress={onShare} style={styles.shareButton}>
+            <Text style={styles.shareButtonText}>Share</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleLeave} style={styles.leaveButton}>
+            <Text style={styles.leaveButtonText}>Leave</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-  
-      <View style={styles.headerRight}>
-        <TouchableOpacity onPress={onShare} style={styles.shareButton}>
-          <Text style={styles.shareButtonText}>Share</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleLeave} style={styles.leaveButton}>
-          <Text style={styles.leaveButtonText}>Leave</Text>
-        </TouchableOpacity>
+
+      {/* Zego video area */}
+      <View style={styles.videoContainer}>
+        {(() => {
+          console.log('[MeetingRoom] Rendering Zego with config:', {
+            appID: zegoConfig.appID,
+            appIDType: typeof zegoConfig.appID,
+            tokenLength: zegoConfig.token?.length,
+            userID: zegoConfig.userID,
+            userName: zegoConfig.userName,
+            conferenceID: zegoConfig.conferenceID,
+          });
+
+          return (
+            <ZegoUIKitPrebuiltVideoConference
+              appID={zegoConfig.appID}
+              token={zegoConfig.token}
+              userID={zegoConfig.userID}
+              userName={zegoConfig.userName}
+              conferenceID={zegoConfig.conferenceID}
+              config={conferenceConfig}
+            />
+          );
+        })()}
       </View>
     </View>
-  
-    {/* Zego video area */}
-    <View style={styles.videoContainer}>
-      <ZegoUIKitPrebuiltVideoConference
-        appID={zegoConfig.appID}
-        token={zegoConfig.token}
-        userID={zegoConfig.userID}
-        userName={zegoConfig.userName}
-        conferenceID={zegoConfig.conferenceID}
-        config={conferenceConfig}
-      />
-    </View>
-  </View>
   );
 };
 

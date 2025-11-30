@@ -1,4 +1,3 @@
-// mobile/App.js
 import 'react-native-gesture-handler';
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
@@ -35,7 +34,7 @@ console.info = (...args) => {
       msg.includes('You are not join in any room, no need to leave room.') ||
       msg.includes('Remove callback for: [ GalleryLayout'))
   ) {
-    return; // swallow Zego info logs
+    return;
   }
   originalConsoleInfo(...args);
 };
@@ -44,7 +43,7 @@ console.info = (...args) => {
 
 
 
-// Import screens
+
 import PublicLanding from './src/screens/PublicLanding';
 import PrivateLanding from './src/screens/PrivateLanding';
 import LoginScreen from './src/screens/auth/LoginScreen';
@@ -97,8 +96,8 @@ const AppStack = () => (
       name="PrivateLanding"
       component={PrivateLanding}
       options={{
-        title: 'Home',
-        headerShown: true
+        title: 'Quick Connect',
+        headerShown: false
       }}
     />
     <Stack.Screen

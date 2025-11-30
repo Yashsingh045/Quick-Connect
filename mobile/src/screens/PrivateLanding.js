@@ -115,23 +115,24 @@ const PrivateLanding = () => {
       <View>
         <Text style={styles.headerTitle}>Quick Connect</Text>
       </View>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.greeting}>{getGreeting()}</Text>
-          <Text style={styles.userName}>
-            {user?.userName || user?.name || 'User'}
-          </Text>
-        </View>
-
-        <View style={styles.headerRight}>
-
-          <TouchableOpacity>
-            <Image source={require('../../assets/icon.png')} style={styles.profileImage} />
-          </TouchableOpacity>
-        </View>
-      </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+
+        {/* Greeting Header */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.greeting}>{getGreeting()}</Text>
+            <Text style={styles.userName}>
+              {user?.userName || user?.name || 'User'}
+            </Text>
+          </View>
+
+          <View style={styles.headerRight}>
+            <TouchableOpacity>
+              <Image source={require('../../assets/icon.png')} style={styles.profileImage} />
+            </TouchableOpacity>
+          </View>
+        </View>
 
         {/* Join Meeting Card */}
         <View style={styles.card}>
@@ -237,7 +238,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 30,
+    paddingTop: 15,
     paddingBottom: 10,
   },
   headerTitle: {

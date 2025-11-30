@@ -11,46 +11,44 @@ const LoginScreen = ({ navigation }) => {
 
   const { login } = useAuth();
 
-const handleLogin = async () => {
-  // Basic validation
-  if (!email || !password) {
-    setError('Please enter both email and password');
-    return;
-  }
-
-  // Email format validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    setError('Please enter a valid email address');
-    return;
-  }
-
-  setIsLoading(true);
-  setError('');
-
-  try {
-    const result = await login(email, password);
-    if (result.success) {
-      // Only navigate on successful login
-      // The navigation will be handled by the AuthNavigator based on the auth state
-      console.log('Login successful');
-    } else {
-      setError(result.error || 'Invalid email or password');
+  const handleLogin = async () => {
+    // Basic validation
+    if (!email || !password) {
+      setError('Please enter both email and password');
+      return;
     }
-  } catch (error) {
-    console.error('Login error:', error);
-    setError('An unexpected error occurred. Please try again.');
-  } finally {
-    setIsLoading(false);
-  }
-};
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const result = await login(email, password);
+      if (result.success) {
+        console.log('Login successful');
+      } else {
+        setError(result.error || 'Invalid email or password');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome Back</Text>
-      
+
       {error ? <Text style={styles.error}>{error}</Text> : null}
-      
+
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -59,7 +57,7 @@ const handleLogin = async () => {
         keyboardType="email-address"
         autoCapitalize="none"
       />
-      
+
       <TextInput
         style={styles.input}
         placeholder="Password"
@@ -67,10 +65,10 @@ const handleLogin = async () => {
         onChangeText={setPassword}
         secureTextEntry
       />
-      
-      <TouchableOpacity 
+
+      <TouchableOpacity
         style={[styles.button, (isLoading || !email || !password) && styles.buttonDisabled]}
-        onPress={handleLogin} 
+        onPress={handleLogin}
         disabled={isLoading || !email || !password}
         activeOpacity={0.8}
       >
@@ -80,14 +78,14 @@ const handleLogin = async () => {
           <Text style={styles.buttonText}>Sign In</Text>
         )}
       </TouchableOpacity>
-      
+
       <View style={styles.footer}>
         <Text>Don't have an account? </Text>
         <TouchableOpacity onPress={() => navigation.navigate('Register')}>
           <Text style={styles.link}>Sign up</Text>
         </TouchableOpacity>
       </View>
-      
+
       <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
         <Text style={styles.link}>Forgot Password?</Text>
       </TouchableOpacity>
@@ -144,14 +142,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   error: {
-  color: 'red',
-  marginBottom: 15,
-  textAlign: 'center',
-  padding: 10,
-  backgroundColor: '#ffebee',
-  borderRadius: 5,
-  width: '100%',
-}
+    color: 'red',
+    marginBottom: 15,
+    textAlign: 'center',
+    padding: 10,
+    backgroundColor: '#ffebee',
+    borderRadius: 5,
+    width: '100%',
+  }
 });
 
 export default LoginScreen;

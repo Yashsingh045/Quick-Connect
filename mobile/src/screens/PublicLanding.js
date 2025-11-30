@@ -22,14 +22,16 @@ export default function PublicLanding({ onJoin }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <StatusBar style="dark" />
 
-        {/* Header */}
+      <View style={styles.headerContainer}>
+
         <View style={styles.header}>
           <Text style={styles.appTitle}>Quick Connect</Text>
           <Image source={require('../../assets/icon.png')} style={styles.avatar} />
         </View>
+      </View>
+      <View style={styles.container}>
+        <StatusBar style="dark" />
 
         <View style={styles.content}>
           {/* Subtitle */}
@@ -44,7 +46,7 @@ export default function PublicLanding({ onJoin }) {
 
           {/* Description */}
           <Text style={styles.description}>
-            Enterprise-grade video calls, messaging, and file sharing protected by invisible, always-on end-to-end encryption.
+            Enterprise-grade video calls, Team Meetings, Video Conferencing protected by invisible, always-on end-to-end encryption.
           </Text>
         </View>
 
@@ -67,6 +69,7 @@ export default function PublicLanding({ onJoin }) {
           </TouchableOpacity>
         </View>
       </View>
+
     </SafeAreaView>
   );
 }
@@ -93,6 +96,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING * 1.5,
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
+  headerContainer: {
+    flex: 1,
+    backgroundColor: LIGHT_BG,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -100,6 +107,11 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING,
     marginBottom: SPACING * 10,
     marginTop: SPACING * 4,
+    boxSizing: 'border-box',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    borderRadius: 10,
+    paddingHorizontal: SPACING * 1.5,
+
   },
   appTitle: {
     color: DARK_TEXT,
@@ -113,12 +125,16 @@ const styles = StyleSheet.create({
     height: 50,
     width: 50,
   },
+  content: {
+    marginTop: -SPACING * 10,
+  },
   secureText: {
     color: BLUE,
     fontWeight: '700',
     fontSize: 12,
     letterSpacing: 1,
     marginBottom: SPACING * 2,
+
   },
   mainHeading: {
     color: DARK_TEXT,
