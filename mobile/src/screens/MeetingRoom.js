@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import ZegoUIKitPrebuiltVideoConference, { ZegoMenuBarButtonName } from '@zegocloud/zego-uikit-prebuilt-video-conference-rn';
+import ZegoExpressEngine from 'zego-express-engine-reactnative';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../contexts/AuthContext';
@@ -26,6 +27,7 @@ const MeetingRoom = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [permissionsGranted, setPermissionsGranted] = useState(false);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
 
   const cleanRoomName = (roomName || '').trim();
   const currentUserLabel = user?.userName || user?.name || user?.email || 'Guest';
@@ -54,6 +56,51 @@ const MeetingRoom = () => {
     }
   };
 
+  // Screen sharing functions
+  const startScreenSharing = async () => {
+    try {
+      if (Platform.OS === 'android') {
+        // Start screen capture on Android
+        await ZegoExpressEngine.instance().startScreenCapture();
+
+        // Update state
+        setIsScreenSharing(true);
+
+        Alert.alert('Screen Sharing', 'Screen sharing started successfully!');
+      } else {
+        Alert.alert('Not Supported', 'Screen sharing is currently only supported on Android.');
+      }
+    } catch (error) {
+      console.error('Screen sharing error:', error);
+      Alert.alert('Error', 'Failed to start screen sharing: ' + error.message);
+    }
+  };
+
+  const stopScreenSharing = async () => {
+    try {
+      if (Platform.OS === 'android') {
+        // Stop screen capture
+        await ZegoExpressEngine.instance().stopScreenCapture();
+
+        // Update state
+        setIsScreenSharing(false);
+
+        Alert.alert('Screen Sharing', 'Screen sharing stopped.');
+      }
+    } catch (error) {
+      console.error('Stop screen sharing error:', error);
+      Alert.alert('Error', 'Failed to stop screen sharing: ' + error.message);
+    }
+  };
+
+  const toggleScreenSharing = () => {
+    if (isScreenSharing) {
+      stopScreenSharing();
+    } else {
+      startScreenSharing();
+    }
+  };
+
   const conferenceConfig = useMemo(
     () => ({
       onLeave: handleLeave,
@@ -64,6 +111,7 @@ const MeetingRoom = () => {
       audioVideoViewConfig: {
         showUserNameOnView: true,
         showSoundWavesInAudioMode: true,
+        useVideoViewAspectFill: true, // Ensure video fills the view
       },
       bottomMenuBarConfig: {
         buttons: [
@@ -222,8 +270,13 @@ const MeetingRoom = () => {
         </View>
 
         <View style={styles.headerRight}>
-          <TouchableOpacity onPress={() => Alert.alert('Screen Share', 'Feature coming soon')} style={styles.shareButton}>
-            <Text style={styles.shareButtonText}>Share Screen</Text>
+          <TouchableOpacity
+            onPress={toggleScreenSharing}
+            style={[styles.shareButton, isScreenSharing && styles.sharingActiveButton]}
+          >
+            <Text style={[styles.shareButtonText, isScreenSharing && styles.sharingActiveText]}>
+              {isScreenSharing ? 'Stop Sharing' : 'Share Screen'}
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={onShare} style={styles.shareButton}>
             <Text style={styles.shareButtonText}>Share</Text>
@@ -287,6 +340,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#ef4444',
   },
   leaveButtonText: { color: '#fff', fontWeight: '600', fontSize: 12 },
+  sharingActiveButton: {
+    backgroundColor: '#10b981',
+    borderColor: '#10b981',
+  },
+  sharingActiveText: {
+    color: '#fff',
+  },
 });
 
 export default MeetingRoom;

@@ -20,7 +20,7 @@ import ScheduledMeetingsModal from '../components/ScheduledMeetingsModal';
 import RecentMeetingsCard from '../components/RecentMeetingsCard';
 import RecentMeetingsModal from '../components/RecentMeetingsModal';
 import ScheduleMeetingModal from '../components/ScheduleMeetingModal';
-import { getRecentMeetings, getUpcomingMeetings, createMeeting } from '../services/meetingsService';
+import { getRecentMeetings, getUpcomingMeetings, createMeeting, validateRoomCode, createInstantMeeting } from '../services/meetingsService';
 
 const PrivateLanding = () => {
   const navigation = useNavigation();
@@ -56,17 +56,42 @@ const PrivateLanding = () => {
     }, [])
   );
 
-  const handleJoinMeeting = () => {
+  const handleJoinMeeting = async () => {
     if (!meetingCode.trim()) {
       Alert.alert('Error', 'Please enter a meeting code');
       return;
     }
-    navigation.navigate('MeetingRoom', { roomName: meetingCode.trim() });
+
+    // Validate room code exists
+    const result = await validateRoomCode(meetingCode.trim());
+
+    if (!result.success) {
+      Alert.alert('Invalid Code', result.message || 'This meeting code does not exist');
+      return;
+    }
+
+    navigation.navigate('MeetingRoom', {
+      roomName: meetingCode.trim(),
+      title: result.data?.title
+    });
   };
 
-  const handleNewMeeting = () => {
-    const randomRoomId = Math.floor(10000000 + Math.random() * 90000000).toString();
-    navigation.navigate('MeetingRoom', { roomName: randomRoomId });
+  const handleNewMeeting = async () => {
+    try {
+      const result = await createInstantMeeting();
+
+      if (result.success) {
+        navigation.navigate('MeetingRoom', {
+          roomName: result.data.roomID,
+          title: result.data.title
+        });
+      } else {
+        Alert.alert('Error', result.message || 'Failed to create instant meeting');
+      }
+    } catch (error) {
+      console.error('Error creating instant meeting:', error);
+      Alert.alert('Error', 'Could not start meeting. Please try again.');
+    }
   };
 
   const handleScheduleNew = () => {

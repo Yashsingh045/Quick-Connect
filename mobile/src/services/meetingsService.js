@@ -72,9 +72,54 @@ export const createMeeting = async (meetingData) => {
     }
 };
 
+/**
+ * Validate a room code
+ * @param {string} roomID - Room ID to validate
+ * @returns {Promise} - Promise with validation result
+ */
+export const validateRoomCode = async (roomID) => {
+    try {
+        const response = await api.get(`/meetings/validate/${roomID}`);
+        return {
+            success: true,
+            data: response.data.data
+        };
+    } catch (error) {
+        console.error('Error validating room code:', error);
+        return {
+            success: false,
+            message: error.response?.data?.message || 'Invalid meeting code',
+            error: error
+        };
+    }
+};
+
+/**
+ * Create an instant meeting
+ * @returns {Promise} - Promise with created instant meeting data
+ */
+export const createInstantMeeting = async () => {
+    try {
+        const response = await api.post('/meetings/instant', {});
+        return {
+            success: true,
+            data: response.data.data
+        };
+    } catch (error) {
+        console.error('Error creating instant meeting:', error);
+        return {
+            success: false,
+            message: error.response?.data?.message || 'Failed to create instant meeting',
+            error: error
+        };
+    }
+};
+
 export default {
     getRecentMeetings,
     getUpcomingMeetings,
     getAllMeetings,
-    createMeeting
+    createMeeting,
+    validateRoomCode,
+    createInstantMeeting
 };

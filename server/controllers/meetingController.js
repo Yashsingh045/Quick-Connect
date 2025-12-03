@@ -279,3 +279,104 @@ export const getRecentMeetings = async (req, res) => {
         });
     }
 };
+
+
+export const validateRoomCode = async (req, res) => {
+    try {
+        const { roomID } = req.params;
+
+        if (!roomID) {
+            return res.status(400).json({
+                success: false,
+                message: "Room ID is required"
+            });
+        }
+
+        const meeting = await prisma.meetings.findUnique({
+            where: { roomID: roomID },
+            include: {
+                participants: {
+                    select: {
+                        id: true,
+                        userName: true,
+                        email: true
+                    }
+                }
+            }
+        });
+
+        if (!meeting) {
+            return res.status(404).json({
+                success: false,
+                message: "Invalid meeting code. Please check and try again."
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: meeting
+        });
+    } catch (error) {
+        console.error("Error validating room code:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error validating room code",
+            error: error.message
+        });
+    }
+};
+
+
+export const createInstantMeeting = async (req, res) => {
+    try {
+        const hostId = req.user?.id;
+
+        if (!hostId) {
+            return res.status(401).json({
+                success: false,
+                message: "User not authenticated"
+            });
+        }
+
+        // Generate unique 8-digit room ID
+        const roomID = Math.floor(10000000 + Math.random() * 90000000).toString();
+
+        const now = new Date();
+        const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
+
+        const meeting = await prisma.meetings.create({
+            data: {
+                title: "Instant Meeting",
+                roomID,
+                hostId,
+                meetingFrom: now,
+                meetingTo: oneHourLater,
+                participants: {
+                    connect: [{ id: hostId }]
+                }
+            },
+            include: {
+                participants: {
+                    select: {
+                        id: true,
+                        userName: true,
+                        email: true
+                    }
+                }
+            }
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: "Instant meeting created successfully",
+            data: meeting
+        });
+    } catch (error) {
+        console.error("Error creating instant meeting:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to create instant meeting",
+            error: error.message
+        });
+    }
+};
